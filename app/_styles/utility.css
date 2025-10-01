@@ -1,0 +1,26 @@
+@theme {
+	--color-primary: var(--logo-primary);
+	--color-secondary: var(--logo-secondary);
+	--font-logo: "logo";
+	--font-secondary: "secondary";
+
+	--spacing-p: var(--p);
+	--spacing-sidebar-p: var(--sidebar-p);
+	--spacing-external-p: var(--external-p);
+      --spacing-sidebar-width: var(--sidebar-width);
+
+      --radius-round: var(--round);
+
+	--spacing-maxwidth: var(--maxwidth);
+	--radius-sm: calc(var(--radius) - 4px);
+	--radius-md: calc(var(--radius) - 2px);
+	--radius-lg: var(--radius);
+	--radius-xl: calc(var(--radius) + 4px);
+	--color-background: var(--background);
+	--color-foreground: hsl(var(--foreground));
+
+}
+
+    
+
+ 
