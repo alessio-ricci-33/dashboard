@@ -1,11 +1,18 @@
-import { Stage } from 'react-konva';
-import { PropsWithChildren, useEffect, useRef } from 'react';
+import { Stage } from "react-konva";
+import { PropsWithChildren, useEffect, useRef } from "react";
+import { randomUUID } from "crypto";
 
 export default ({
 	children,
+
 	...props
 }: PropsWithChildren &
-	Partial<Parameters<typeof Stage>[0]> & { download?: boolean; onDownload?: () => void }) => {
+	Partial<Parameters<typeof Stage>[0]> & {
+		download?: boolean;
+		onDownload?: () => void;
+		filename?: string;
+		fileType?: string;
+	}) => {
 	const stageRef = useRef<any>(null);
 
 	useEffect(() => {
@@ -20,13 +27,13 @@ export default ({
 			if (!stageRef.current) return;
 
 			const uri = stageRef.current.toDataURL({
-				mimeType: 'image/webp',
+				mimeType: `image/${props.fileType ?? "png"}`,
 				pixelRatio: 10, // aumenta per qualità superiore
 				quality: 1, // 1 = massima qualità per WebP
 			});
 
-			const link = document.createElement('a');
-			link.download = 'canvas.webp';
+			const link = document.createElement("a");
+			link.download = (props.filename ?? randomUUID()) + `.${props.fileType ?? "png"}`;
 			link.href = uri;
 			link.click();
 			link.remove();
@@ -40,8 +47,9 @@ export default ({
 		<Stage
 			ref={stageRef}
 			options={{ preserveDrawingBuffer: true }}
-			style={{ backgroundColor: 'transparent', overflow: 'visible' }}
-			{...props}>
+			style={{ backgroundColor: "transparent", overflow: "visible" }}
+			{...props}
+		>
 			{children}
 		</Stage>
 	);

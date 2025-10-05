@@ -1,45 +1,45 @@
-import { TbMenu2 } from 'react-icons/tb';
-import { IoDocuments } from 'react-icons/io5';
-import { GoPencil } from 'react-icons/go';
-import { Layer, Rect, Text, Circle, Group } from 'react-konva';
-import { BiSearchAlt } from 'react-icons/bi';
+import { TbMenu2 } from "react-icons/tb";
+import { IoDocuments } from "react-icons/io5";
+import { GoPencil } from "react-icons/go";
+import { Layer, Rect, Text, Circle, Group } from "react-konva";
+import { BiSearchAlt } from "react-icons/bi";
 
-import { HiArrowLeft } from 'react-icons/hi2';
-import { ParamsToProps } from '@/types/utils';
-import DownloadableCanvas from '@/components/downloadable-canvas';
-import { LocalImage, SvgIconImage } from '@/utils/local-image';
+import { HiArrowLeft } from "react-icons/hi2";
+import { ParamsToProps } from "@/types/utils";
+import DownloadableCanvas from "@/components/downloadable-canvas";
+import { LocalImage, SvgIconImage } from "@/utils/local-image";
 
-import { Dialog, DialogContent, DialogTrigger } from '@/ui/dialog';
-import { useState } from 'react';
-import { Separator } from '@/ui/separator';
-import { Input } from '@/ui/input';
-import { Button } from '@/ui/button';
+import { Dialog, DialogContent, DialogTrigger } from "@/ui/dialog";
+import { useState } from "react";
+import { Separator } from "@/ui/separator";
+import { Input } from "@/ui/input";
+import { Button } from "@/ui/button";
 
 export const params = {
 	padding: {
 		type: Number,
-		label: 'Padding',
+		label: "Padding",
 		default: 20,
 	},
 	height: {
 		type: Number,
-		label: 'Altezza',
+		label: "Altezza",
 		default: 520,
 	},
 	width: {
 		type: Number,
-		label: 'Larghezza',
+		label: "Larghezza",
 		default: 290,
 	},
 	placeholder: {
 		type: String,
-		label: 'Search placeholder',
-		default: 'Scrivi i tuoi interessi ...',
+		label: "Search placeholder",
+		default: "Scrivi i tuoi interessi ...",
 	},
 	answer: {
 		type: String,
-		label: 'Answer',
-		default: 'Ho sempre pensato che saremmo stati destinati a stare insieme ❤',
+		label: "Answer",
+		default: "Ho sempre pensato che saremmo stati destinati a stare insieme ❤",
 	},
 };
 
@@ -48,9 +48,7 @@ export const defaultProps: Props = Object.entries(params).reduce(
 	{}
 );
 
-export const Canvas = (
-	props = defaultProps as Props & { download?: boolean; onDownload?: () => void }
-) => {
+export const Canvas = (props = defaultProps as Props & { download?: boolean; onDownload?: () => void }) => {
 	const { height, width, padding, placeholder, answer } = Object.entries(params).reduce(
 		(acc, [key, { default: defaultValue }]) => {
 			if (!props[key]) acc[key] = defaultValue;
@@ -62,10 +60,12 @@ export const Canvas = (
 
 	return (
 		<DownloadableCanvas
+			filename="wingai-mockup"
 			download={props.download}
 			onDownload={props.onDownload}
 			height={height + padding * 2}
-			width={width + padding * 2}>
+			width={width + padding * 2}
+		>
 			<Layer>
 				<Group x={padding} y={padding}>
 					<Rect
@@ -104,19 +104,21 @@ export const Canvas = (
 
 					<Group
 						y={height * 0.18}
-						clipFunc={ctx => {
+						clipFunc={(ctx) => {
 							ctx.beginPath();
 							ctx.roundRect(0, 0, width, height * 0.82, 12);
 							ctx.closePath();
-						}}>
+						}}
+					>
 						<Group
 							y={0}
 							height={height * 0.6}
-							clipFunc={ctx => {
+							clipFunc={(ctx) => {
 								ctx.beginPath();
 								ctx.roundRect(0, 0, width, height * 0.6, 0);
 								ctx.closePath();
-							}}>
+							}}
+						>
 							<Circle
 								width={height * 4}
 								height={height * 4}
@@ -127,12 +129,7 @@ export const Canvas = (
 								fillRadialGradientEndRadius={height}
 								fillRadialGradientStartPoint={{ x: 0, y: 0 }}
 								fillRadialGradientEndPoint={{ x: 0, y: 0 }}
-								fillRadialGradientColorStops={[
-									0,
-									'#ffba9f',
-									0.23,
-									'#f6acc1',
-								]}
+								fillRadialGradientColorStops={[0, "#ffba9f", 0.23, "#f6acc1"]}
 							/>
 							<Circle
 								width={height * 4}
@@ -146,9 +143,9 @@ export const Canvas = (
 								fillRadialGradientEndPoint={{ x: 0, y: 0 }}
 								fillRadialGradientColorStops={[
 									0,
-									'rgba(0,0,0,0.07)',
+									"rgba(0,0,0,0.07)",
 									0.007,
-									'transparent',
+									"transparent",
 								]}
 							/>
 							{/* Search bar */}
@@ -165,12 +162,7 @@ export const Canvas = (
 								/>
 
 								<SvgIconImage
-									Icon={
-										<BiSearchAlt
-											size={20}
-											color="#ff6a6a"
-										/>
-									}
+									Icon={<BiSearchAlt size={20} color="#ff6a6a" />}
 									src="/templates/wingai/search_bar.png"
 									height={20}
 									x={13}
@@ -178,7 +170,7 @@ export const Canvas = (
 								/>
 								<Text
 									text={placeholder}
-									fill={'#71717b'}
+									fill={"#71717b"}
 									fontFamily="secondary"
 									fontSize={14}
 									x={40}
@@ -198,12 +190,7 @@ export const Canvas = (
 								fillRadialGradientStartRadius={height * 3}
 								fillRadialGradientStartPoint={{ x: 0, y: 0 }}
 								fillRadialGradientEndPoint={{ x: 0, y: 0 }}
-								fillRadialGradientColorStops={[
-									0,
-									'#ffffff',
-									0.5,
-									'#ffffff',
-								]}
+								fillRadialGradientColorStops={[0, "#ffffff", 0.5, "#ffffff"]}
 								shadowBlur={21}
 								shadowOffsetY={8}
 								shadowColor="#000000"
@@ -248,9 +235,9 @@ export const Canvas = (
 										}}
 										fillLinearGradientColorStops={[
 											0,
-											'#fcebe6',
+											"#fcebe6",
 											1,
-											'#f9e6ea',
+											"#f9e6ea",
 										]}
 									/>
 									<Text
@@ -265,10 +252,7 @@ export const Canvas = (
 										text={answer}
 										lineHeight={1.1}
 									/>
-									<Group
-										width={46 + 5}
-										x={width - 46 - 20}
-										y={-10}>
+									<Group width={46 + 5} x={width - 46 - 20} y={-10}>
 										<Rect
 											x={-20}
 											y={-3}
@@ -340,65 +324,53 @@ export const component = (oldProps: Props = defaultProps) => {
 
 	return (
 		<Dialog
-			onOpenChange={openState => {
+			onOpenChange={(openState) => {
 				setDialogOpen(openState);
 				if (!openState) setToDownload(false);
-			}}>
-			<DialogTrigger key={'dialog-trigger'}>
+			}}
+		>
+			<DialogTrigger key={"dialog-trigger"}>
 				<Canvas download={false} {...oldProps} />
 			</DialogTrigger>
 			<DialogContent
-				key={'dialog-content'}
-				className="flex flex-row items-center gap-p p-p border border-zinc-600/50 !max-w-none w-fit shadow-[0_0_7px_-1px_#b0e9ff4a]">
+				key={"dialog-content"}
+				className="flex flex-row items-center gap-p p-p border border-zinc-600/50 !max-w-none w-fit shadow-[0_0_7px_-1px_#b0e9ff4a]"
+			>
 				<div className="contents">
-					<Canvas
-						download={toDownload}
-						onDownload={() => setToDownload(false)}
-						{...props}
-					/>
+					<Canvas download={toDownload} onDownload={() => setToDownload(false)} {...props} />
 				</div>
 				<Separator
 					orientation="vertical"
 					className="![background-color:transparent] bg-radial-[at_center] from-white to-80% to-transparent !h-[-webkit-fill-available]"
 				/>
 				<div className="flex flex-col gap-sidebar-p w-full">
-					{Object.entries(params).map(
-						([key, { label, default: defaultValue }], index) => (
-							<span key={index + key}>
-								{label}
-								:
-								<Input
-									type={
-										typeof defaultValue === 'number'
-											? 'number'
-											: 'text'
-									}
-									className="min-w-60"
-									onChange={e => {
-										if (!e.target.value?.trim().length)
-											return;
-										setProps({
-											...props,
-											[key]:
-												typeof defaultValue ===
-												'number'
-													? parseInt(
-															e.target
-																.value
-													  )
-													: e.target.value,
-										});
-									}}
-									defaultValue={props[key] ?? defaultValue}
-								/>
-							</span>
-						)
-					)}
+					{Object.entries(params).map(([key, { label, default: defaultValue }], index) => (
+						<span key={index + key}>
+							{label}
+							:
+							<Input
+								type={typeof defaultValue === "number" ? "number" : "text"}
+								className="min-w-60"
+								onChange={(e) => {
+									if (!e.target.value?.trim().length) return;
+									setProps({
+										...props,
+										[key]:
+											typeof defaultValue === "number"
+												? parseInt(e.target.value)
+												: e.target.value,
+									});
+								}}
+								defaultValue={props[key] ?? defaultValue}
+							/>
+						</span>
+					))}
 					<Button
 						className="mt-p cursor-pointer"
 						variant="outline"
 						size="sm"
-						onClick={() => setToDownload(true)}>
+						onClick={() => setToDownload(true)}
+					>
 						Download
 					</Button>
 				</div>

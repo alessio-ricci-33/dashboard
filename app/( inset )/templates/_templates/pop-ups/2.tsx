@@ -52,6 +52,7 @@ export const Canvas = (props = defaultProps as Props & { download?: boolean; onD
 
 	return (
 		<DownloadableCanvas
+			filename="popup-island"
 			download={props.download}
 			onDownload={props.onDownload}
 			width={width + PADDING * 2}
