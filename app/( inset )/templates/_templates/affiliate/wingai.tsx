@@ -366,17 +366,6 @@ export const component = (oldProps: Props = defaultProps) => {
 			<DialogContent
 				key={'dialog-content'}
 				className="flex flex-row items-center gap-p p-p border border-zinc-600/50 !max-w-none w-fit shadow-[0_0_7px_-1px_#b0e9ff4a]">
-				<div className="contents">
-					<Canvas
-						download={toDownload}
-						onDownload={() => setToDownload(false)}
-						{...props}
-					/>
-				</div>
-				<Separator
-					orientation="vertical"
-					className="![background-color:transparent] bg-radial-[at_center] from-white to-80% to-transparent !h-[-webkit-fill-available]"
-				/>
 				<div className="grid grid-cols-12 auto-rows-fr justify-items-start gap-p szie-full self-start">
 					{Object.entries(params).map(
 						(
@@ -428,6 +417,17 @@ export const component = (oldProps: Props = defaultProps) => {
 						onClick={() => setToDownload(true)}>
 						Download
 					</Button>
+				</div>
+				<Separator
+					orientation="vertical"
+					className="![background-color:transparent] bg-radial-[at_center] from-white to-80% to-transparent !h-[-webkit-fill-available]"
+				/>
+				<div className="contents">
+					<Canvas
+						download={toDownload}
+						onDownload={() => setToDownload(false)}
+						{...props}
+					/>
 				</div>
 			</DialogContent>
 		</Dialog>

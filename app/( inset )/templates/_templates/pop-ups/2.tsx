@@ -1,6 +1,6 @@
-import { Circle, Group, Layer, Rect, Text } from 'react-konva';
+import { Circle, Group, Layer, Rect, Stage, Text } from 'react-konva';
 import { LocalImage, SvgIconImage } from '@/utils/local-image';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Dialog, DialogContent, DialogTrigger } from '@/ui/dialog';
 import { Button } from '@/ui/button';
 import { Input } from '@/ui/input';
@@ -10,6 +10,7 @@ import { ParamsToProps } from '@/types/utils';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/ui/tabs';
 import { ImArrowUpRight2 } from 'react-icons/im';
 import { cn } from '@/utils/shadcn';
+import { useFrameCapture } from '@/hooks/use-frame-capture';
 
 export const params = {
 	brandName: {
@@ -54,7 +55,7 @@ export const defaultProps: Props = Object.entries(params).reduce(
 
 const PADDING = 20;
 
-export const Canvas = (
+export const Image = (
 	props = defaultProps as Props & { download?: boolean; onDownload?: () => void }
 ) => {
 	const localProps = Object.entries(params).reduce((acc, [key, { default: defaultValue }]) => {
@@ -76,6 +77,183 @@ export const Canvas = (
 			options={{ preserveDrawingBuffer: true }}
 			style={{ backgroundColor: 'transparent', overflow: 'visible' }}>
 			<Layer>
+				<Rect
+					x={PADDING}
+					y={PADDING - 0.5}
+					width={width}
+					height={height}
+					fill="#000000"
+					cornerRadius={35}
+					stroke="#000000" // colore del bordo
+					strokeWidth={0.5}
+					shadowBlur={16}
+					shadowColor="#ffffff"
+					shadowOpacity={0.4}
+					shadowOffsetY={0.5}
+				/>
+
+				<Rect
+					x={PADDING}
+					y={PADDING}
+					width={width}
+					height={height}
+					fillLinearGradientStartPoint={{ x: 0.8, y: -10 }}
+					fillLinearGradientEndPoint={{ x: -0.8, y: height }}
+					fillLinearGradientColorStops={[0, '#2f2f32', 0.85, '#000000']}
+					stroke="#2f2f32" // colore del bordo
+					strokeWidth={1}
+					cornerRadius={35}
+				/>
+
+				<Group x={PADDING + 12} y={PADDING + 10}>
+					{/* Immagine locale sopra il rettangolo */}
+					<LocalImage
+						x={-1}
+						y={-1}
+						src="/messaggi-italia.png" // immagine salvata in public/images/logo.png
+						height={height - PADDING + 2}
+						shadowColor="#15171c"
+						shadowBlur={7}
+					/>
+
+					<Group x={height - PADDING + 8}>
+						<Text
+							y={-2}
+							fontSize={19}
+							lineHeight={1}
+							text={brandName}
+							fontFamily="logo" // deve corrispondere al nome definito in @font-face
+							fill="white"
+							opacity={0.75}
+						/>
+						<Text
+							y={PADDING}
+							fontSize={17}
+							lineHeight={1}
+							text={message}
+							fontFamily="secondary" // deve corrispondere al nome definito in @font-face
+							fill="white"
+						/>
+					</Group>
+
+					<Group x={width - PADDING * 2 - 2} y={(height - PADDING) / 2 - 0.5}>
+						<Circle
+							radius={999}
+							fill="#15171c"
+							shadowBlur={7}
+							shadowColor="#ffffff"
+							shadowOpacity={0.4}
+							height={height - PADDING + 2}
+							width={height - PADDING + 2}
+						/>
+						<SvgIconImage
+							Icon={
+								<ImArrowUpRight2
+									size={21}
+									color="white"
+									opacity={0.55}
+								/>
+							}
+							height={21}
+							x={-height / 2 + PADDING - 2}
+							y={-PADDING / 2}
+						/>
+					</Group>
+				</Group>
+			</Layer>
+		</DownloadableCanvas>
+	);
+};
+
+export const Video = (
+	props = defaultProps as Props & { download?: boolean; onDownload?: () => void }
+) => {
+	const stageRef = useRef<any>(null),
+		[isRecording, setIsRecording] = useState(true);
+
+	const [showImage, setShowImage] = useState(false);
+	const [showAnswer, setShowAnswer] = useState(false);
+
+	useEffect(() => {
+		let timer: NodeJS.Timeout; // image dopo typing
+		setTimeout(() => {
+			setShowImage(true);
+			setTimeout(async () => {
+				setShowAnswer(true);
+				await new Promise(r => setTimeout(r, 15000));
+				setIsRecording(false);
+			}, 1000);
+		}, 2000);
+
+		return () => clearTimeout(timer);
+	}, []);
+
+	useFrameCapture(stageRef, isRecording, async (frames, fps) => {
+		try {
+			const response = await fetch('http://localhost:3001/render-video', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+				},
+				// Invia l'array di frame e gli FPS calcolati
+				body: JSON.stringify({
+					frames,
+					fps,
+				}),
+			});
+
+			if (!response.ok) {
+				throw new Error(`Errore HTTP: ${response.status}`);
+			}
+
+			const blob = await response.blob();
+			const url = window.URL.createObjectURL(blob);
+			const a = document.createElement('a');
+			a.href = url;
+			a.download = 'chat-story-final.mov';
+			document.body.appendChild(a);
+			a.click();
+			a.remove();
+			window.URL.revokeObjectURL(url);
+
+			console.log('Video scaricato con successo!');
+		} catch (error) {
+			console.error("Errore durante l'invio dei frame o il download del video:", error);
+			alert(
+				'Si è verificato un errore durante la creazione del video. Controlla la console.'
+			);
+		}
+	});
+
+	const localProps = Object.entries(params).reduce((acc, [key, { default: defaultValue }]) => {
+		if (props[key]) acc[key] = props[key];
+		else acc[key] = defaultValue;
+
+		return acc;
+	}, {} as Props);
+
+	const { height, width, brandName, message } = { ...localProps, ...props };
+
+	return (
+		<Stage
+			ref={stageRef}
+			style={{ backgroundColor: 'transparent' }}
+			options={{ preserveDrawingBuffer: true }}
+			height={height + PADDING * 2}
+			width={width + PADDING * 2}>
+			<Layer>
+				<Rect
+					x={PADDING + 0.5}
+					y={PADDING + 0.5}
+					width={width - 1}
+					height={height - 1}
+					fill="transparent"
+					shadowBlur={2}
+					cornerRadius={35}
+					shadowColor="#000000"
+					shadowOpacity={1}
+					shadowOffsetY={2}
+				/>
 				<Rect
 					x={PADDING}
 					y={PADDING}
@@ -148,13 +326,14 @@ export const Canvas = (
 					</Group>
 				</Group>
 			</Layer>
-		</DownloadableCanvas>
+		</Stage>
 	);
 };
 
 export const component = (oldProps: Props = defaultProps) => {
 	const [props, setProps] = useState(oldProps);
-	const [dialogOpen, setDialogOpen] = useState(false),
+	const [tab, setTab] = useState('image'),
+		[dialogOpen, setDialogOpen] = useState(false),
 		[toDownload, setToDownload] = useState(false);
 
 	return (
@@ -164,25 +343,14 @@ export const component = (oldProps: Props = defaultProps) => {
 				if (!open) setToDownload(false);
 			}}>
 			<DialogTrigger key={'dialog-trigger'}>
-				<Canvas download={false} {...oldProps} />
+				<Image download={false} {...oldProps} />
 			</DialogTrigger>
 			<DialogContent
 				key={'dialog-content'}
 				className="flex flex-row items-center gap-p p-p border border-zinc-600/50 !max-w-none w-fit shadow-[0_0_7px_-1px_#b0e9ff4a]">
-				<div className="contents">
-					<Canvas
-						download={toDownload}
-						onDownload={() => setToDownload(false)}
-						{...props}
-					/>
-				</div>
-				<Separator
-					orientation="vertical"
-					className="![background-color:transparent] bg-radial-[at_center] from-white to-transparent !h-[-webkit-fill-available]"
-				/>
-
 				<Tabs
-					defaultValue="account"
+					onValueChange={tabValue => setTab(tabValue)}
+					defaultValue={tab}
 					className="flex flex-col w-full items-center justify-start">
 					<TabsList className="mx-auto">
 						<TabsTrigger value="image">Image</TabsTrigger>
@@ -260,6 +428,26 @@ export const component = (oldProps: Props = defaultProps) => {
 					</TabsContent>
 					<TabsContent value="video">Lol</TabsContent>
 				</Tabs>
+
+				<Separator
+					orientation="vertical"
+					className="![background-color:transparent] bg-radial-[at_center] from-white to-transparent !h-[-webkit-fill-available]"
+				/>
+				<div className="contents">
+					{tab === 'image' ? (
+						<Image
+							download={toDownload}
+							onDownload={() => setToDownload(false)}
+							{...props}
+						/>
+					) : (
+						<Video
+							download={toDownload}
+							onDownload={() => setToDownload(false)}
+							{...props}
+						/>
+					)}
+				</div>
 			</DialogContent>
 		</Dialog>
 	);

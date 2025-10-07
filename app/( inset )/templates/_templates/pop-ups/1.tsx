@@ -193,17 +193,6 @@ export const component = (oldProps: Props = defaultProps) => {
 			<DialogContent
 				key={'dialog-content'}
 				className="flex flex-row items-center gap-p p-p border border-zinc-600/50 !max-w-none w-fit shadow-[0_0_7px_-1px_#b0e9ff4a]">
-				<div className="contents">
-					<Canvas
-						download={toDownload}
-						onDownload={() => setToDownload(false)}
-						{...props}
-					/>
-				</div>
-				<Separator
-					orientation="vertical"
-					className="![background-color:transparent] bg-radial-[at_center] from-white to-transparent !h-[-webkit-fill-available]"
-				/>
 				<div className="flex flex-col gap-sidebar-p w-full">
 					{Object.entries(params).map(
 						([key, { label, default: defaultValue }], index) => (
@@ -244,6 +233,17 @@ export const component = (oldProps: Props = defaultProps) => {
 						onClick={() => setToDownload(true)}>
 						Download
 					</Button>
+				</div>
+				<Separator
+					orientation="vertical"
+					className="![background-color:transparent] bg-radial-[at_center] from-white to-transparent !h-[-webkit-fill-available]"
+				/>
+				<div className="contents">
+					<Canvas
+						download={toDownload}
+						onDownload={() => setToDownload(false)}
+						{...props}
+					/>
 				</div>
 			</DialogContent>
 		</Dialog>
