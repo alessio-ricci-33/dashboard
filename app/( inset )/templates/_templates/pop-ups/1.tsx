@@ -128,7 +128,7 @@ export const Canvas = (
 						/>
 
 						<Text
-							y={PADDING / 2 + 18}
+							y={PADDING / 2 + 16}
 							text={message}
 							lineHeight={1}
 							fontSize={18}

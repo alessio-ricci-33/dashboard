@@ -84,10 +84,10 @@ export const Canvas = (
 					fillLinearGradientStartPoint={{ x: 0, y: 0 }}
 					fillLinearGradientEndPoint={{ x: 0, y: height }}
 					fillLinearGradientColorStops={[0, '#2f2f32', 0.85, '#000000']}
-					shadowBlur={14}
+					shadowBlur={16}
 					cornerRadius={35}
 					shadowColor="#ffffff"
-					shadowOpacity={0.3}
+					shadowOpacity={0.4}
 					stroke="#2f2f32" // colore del bordo
 					strokeWidth={0.5}
 				/>
