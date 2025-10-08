@@ -74,18 +74,33 @@ export const Canvas = (
 			<Layer>
 				<Rect
 					x={MARGIN}
+					y={MARGIN - 0.5}
+					width={width}
+					height={height}
+					fill="#000000"
+					cornerRadius={35}
+					stroke="#000000" // colore del bordo
+					strokeWidth={0.5}
+					shadowBlur={16}
+					shadowColor="#ffffff"
+					shadowOpacity={0.4}
+					shadowOffsetY={0.5}
+				/>
+				<Rect
+					x={MARGIN}
 					y={MARGIN}
 					width={width}
 					height={height}
-					fillLinearGradientStartPoint={{ x: 0, y: 0 }}
-					fillLinearGradientEndPoint={{ x: 0, y: height }}
+					fillLinearGradientStartPoint={{ x: 0.8, y: -10 }}
+					fillLinearGradientEndPoint={{ x: -0.8, y: height }}
 					fillLinearGradientColorStops={[0, '#2f2f32', 0.85, '#000000']}
-					shadowBlur={14}
 					cornerRadius={35}
-					shadowColor="#ffffff"
-					shadowOpacity={0.3}
 					stroke="#2f2f32" // colore del bordo
 					strokeWidth={0.5}
+					shadowBlur={6}
+					shadowColor="#000000"
+					shadowOpacity={1}
+					shadowOffsetY={-0.5}
 				/>
 				<Group
 					x={MARGIN + PADDING}

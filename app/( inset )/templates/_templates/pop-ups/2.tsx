@@ -103,6 +103,10 @@ export const Image = (
 					stroke="#2f2f32" // colore del bordo
 					strokeWidth={1}
 					cornerRadius={35}
+					shadowBlur={6}
+					shadowColor="#000000"
+					shadowOpacity={1}
+					shadowOffsetY={-0.5}
 				/>
 
 				<Group x={PADDING + 12} y={PADDING + 10}>
