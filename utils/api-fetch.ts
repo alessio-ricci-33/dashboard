@@ -2,8 +2,8 @@ export default async (path: string, options?: Omit<RequestInit, 'body'> & { body
 	try {
 		const url = `${
 			process.env.NODE_ENV === 'production'
-				? 'https://dashboard.beatricetullii.com'
-				: 'http://localhost:3000'
+				? 'https://dashboard.msgi.it'
+				: 'http://localhost:3001'
 		}/api${path}`;
 		const res = await fetch(url, {
 			...options,

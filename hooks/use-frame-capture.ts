@@ -1,24 +1,26 @@
+import type { Stage } from 'konva/lib/Stage';
 import { useEffect, useRef } from 'react';
 
-import type { Stage } from 'konva/lib/Stage';
+type FrameFormat = 'uri' | 'blob' | 'buffer';
+
+interface UseFrameCaptureOptions {
+	format: FrameFormat;
+	onComplete?: (frames: (string | Blob | ArrayBuffer)[], fps: number) => void;
+}
 
 export function useFrameCapture(
 	stageRef: React.RefObject<Stage>,
 	isRecording: boolean,
-	onComplete: (frames: string[], fps: number) => void
+	{ onComplete, format }: UseFrameCaptureOptions = { format: 'uri' }
 ) {
-	const framesRef = useRef<string[]>([]);
+	const framesRef = useRef<(string | Blob | ArrayBuffer)[]>([]);
 	const frameTimestampsRef = useRef<number[]>([]);
 
 	useEffect(() => {
 		if (!stageRef.current) return;
 
-		const canvas = stageRef.current?.toCanvas();
-		const ctx = canvas.getContext('2d');
-		ctx.imageSmoothingEnabled = true;
-		ctx.imageSmoothingQuality = 'high';
-
 		if (!isRecording && framesRef.current.length > 0) {
+			// Calcolo FPS medio
 			let totalDuration = 0;
 			for (let i = 1; i < frameTimestampsRef.current.length; i++) {
 				totalDuration +=
@@ -26,33 +28,63 @@ export function useFrameCapture(
 			}
 			const averageFps = framesRef.current.length / (totalDuration / 1000);
 			const roundedFps = Math.round(averageFps);
-			onComplete(framesRef.current, roundedFps);
+
+			if (onComplete) onComplete(framesRef.current, roundedFps);
+
+			// Reset
+			framesRef.current = [];
+			frameTimestampsRef.current = [];
+			return;
 		}
 
-		const handleFrameCapture = (currentTime: number) => {
+		const captureFrame = async (currentTime: number) => {
 			if (!stageRef.current || !isRecording) return;
-			console.count('frame captured');
 
-			frameTimestampsRef.current.push(currentTime);
-
-			// access canvas context to improve smoothing
 			const canvas = stageRef.current.toCanvas();
 			const ctx = canvas.getContext('2d');
+			if (!ctx) return;
 			ctx.imageSmoothingEnabled = true;
 			ctx.imageSmoothingQuality = 'high';
 
-			const uri = stageRef.current.toDataURL({
-				mimeType: 'image/png',
-				quality: 1,
-				pixelRatio: 2,
-			});
-			framesRef.current.push(uri);
+			frameTimestampsRef.current.push(currentTime);
 
-			requestAnimationFrame(handleFrameCapture);
+			switch (format) {
+				case 'uri': {
+					const uri = stageRef.current.toDataURL({
+						mimeType: 'image/png',
+						quality: 1,
+						pixelRatio: 2,
+					});
+					framesRef.current.push(uri);
+					break;
+				}
+
+				case 'blob': {
+					const blob = await new Promise<Blob>(resolve =>
+						canvas.toBlob(b => resolve(b!), 'image/png', 1)
+					);
+					framesRef.current.push(blob);
+					break;
+				}
+
+				case 'buffer': {
+					const blob = await new Promise<Blob>(resolve =>
+						canvas.toBlob(b => resolve(b!), 'image/png', 1)
+					);
+					const buffer = await blob.arrayBuffer();
+					framesRef.current.push(buffer);
+					break;
+				}
+
+				default:
+					throw new Error(`Formato frame non supportato: ${format}`);
+			}
+
+			requestAnimationFrame(captureFrame);
 		};
 
-		requestAnimationFrame(handleFrameCapture);
-	}, [isRecording, stageRef.current]);
+		requestAnimationFrame(captureFrame);
+	}, [isRecording, stageRef.current, format]);
 
 	return null;
 }

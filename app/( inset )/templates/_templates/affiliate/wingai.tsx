@@ -352,7 +352,8 @@ export const Canvas = (
 export const component = (oldProps: Props = defaultProps) => {
 	const [props, setProps] = useState(oldProps);
 	const [dialogOpen, setDialogOpen] = useState(false),
-		[toDownload, setToDownload] = useState(false);
+		[toDownload, setToDownload] = useState(false),
+		[toRecord, setToRecord] = useState(false);
 
 	return (
 		<Dialog

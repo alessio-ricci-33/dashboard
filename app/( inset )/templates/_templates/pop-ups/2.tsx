@@ -12,6 +12,8 @@ import { ImArrowUpRight2 } from 'react-icons/im';
 import { cn } from '@/utils/shadcn';
 import { useFrameCapture } from '@/hooks/use-frame-capture';
 
+import { useSpring as $, animated } from '@react-spring/konva';
+
 export const params = {
 	brandName: {
 		type: String,
@@ -170,21 +172,24 @@ export const Image = (
 };
 
 export const Video = (
-	props = defaultProps as Props & { download?: boolean; onDownload?: () => void }
+	props = defaultProps as Props & { recording?: boolean; onStopRecording?: () => void }
 ) => {
 	const stageRef = useRef<any>(null),
-		[isRecording, setIsRecording] = useState(true);
+		[isRecording, setIsRecording] = useState(props.recording ?? false);
 
-	const [showImage, setShowImage] = useState(false);
+	const [toFadeIn, setToFadeIn] = useState(true);
 	const [showAnswer, setShowAnswer] = useState(false);
+
+	useEffect(() => {
+		setIsRecording(props.recording ?? false);
+	}, [props.recording]);
 
 	useEffect(() => {
 		let timer: NodeJS.Timeout; // image dopo typing
 		setTimeout(() => {
-			setShowImage(true);
 			setTimeout(async () => {
 				setShowAnswer(true);
-				await new Promise(r => setTimeout(r, 15000));
+				await new Promise(r => setTimeout(r, 7000));
 				setIsRecording(false);
 			}, 1000);
 		}, 2000);
@@ -192,41 +197,25 @@ export const Video = (
 		return () => clearTimeout(timer);
 	}, []);
 
-	useFrameCapture(stageRef, isRecording, async (frames, fps) => {
-		try {
-			const response = await fetch('http://localhost:3001/render-video', {
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json',
-				},
-				// Invia l'array di frame e gli FPS calcolati
-				body: JSON.stringify({
-					frames,
-					fps,
-				}),
-			});
-
-			if (!response.ok) {
-				throw new Error(`Errore HTTP: ${response.status}`);
-			}
-
-			const blob = await response.blob();
-			const url = window.URL.createObjectURL(blob);
-			const a = document.createElement('a');
-			a.href = url;
-			a.download = 'chat-story-final.mov';
-			document.body.appendChild(a);
-			a.click();
-			a.remove();
-			window.URL.revokeObjectURL(url);
-
-			console.log('Video scaricato con successo!');
-		} catch (error) {
-			console.error("Errore durante l'invio dei frame o il download del video:", error);
-			alert(
-				'Si è verificato un errore durante la creazione del video. Controlla la console.'
-			);
-		}
+	useFrameCapture(stageRef, isRecording, {
+		format: 'blob',
+		onComplete: async (frames, fps) => {
+			// const formData = new FormData();
+			// formData.append('fps', fps.toString());
+			// formData.append('assetName', 'popup-island');
+			// frames.forEach((frame, i) => {
+			// 	formData.append(`frames`, frame as Blob);
+			// });
+			// const response = await fetch('/api/upload-frames', {
+			// 	method: 'POST',
+			// 	body: formData,
+			// });
+			// if (!response.ok) {
+			// 	console.error('Errore upload frame');
+			// 	return;
+			// }
+			// console.log('Upload completato');
+		},
 	});
 
 	const localProps = Object.entries(params).reduce((acc, [key, { default: defaultValue }]) => {
@@ -243,9 +232,15 @@ export const Video = (
 			ref={stageRef}
 			style={{ backgroundColor: 'transparent' }}
 			options={{ preserveDrawingBuffer: true }}
-			height={height + PADDING * 2}
+			height={height + PADDING * 2 + 120}
 			width={width + PADDING * 2}>
-			<Layer>
+			{/* @ts-ignore */}
+			<animated.Layer
+				{...$({
+					from: { opacity: 0, y: 0 },
+					to: { opacity: toFadeIn ? 1 : 0, y: toFadeIn ? 120 : 0 },
+					config: { tension: 200, friction: 20, duration: 1250 },
+				})}>
 				<Rect
 					x={PADDING + 0.5}
 					y={PADDING + 0.5}
@@ -285,7 +280,7 @@ export const Video = (
 						shadowBlur={7}
 					/>
 
-					<Group x={height - PADDING + 8}>
+					<Group x={height - PADDING + 8} y={height / 2 - 30}>
 						<Text
 							y={-2}
 							fontSize={19}
@@ -305,7 +300,11 @@ export const Video = (
 						/>
 					</Group>
 
-					<Group x={width - PADDING * 2 - 2} y={(height - PADDING) / 2 - 0.5}>
+					<Group
+						x={width - PADDING * 2 - 2}
+						y={(height - PADDING) / 2 - 0.5}
+						width={height - PADDING + 2}
+						height={height - PADDING + 2}>
 						<Circle
 							radius={999}
 							fill="#15171c"
@@ -324,12 +323,12 @@ export const Video = (
 								/>
 							}
 							height={21}
-							x={-height / 2 + PADDING - 2}
+							x={-10.5}
 							y={-PADDING / 2}
 						/>
 					</Group>
 				</Group>
-			</Layer>
+			</animated.Layer>
 		</Stage>
 	);
 };
@@ -338,7 +337,8 @@ export const component = (oldProps: Props = defaultProps) => {
 	const [props, setProps] = useState(oldProps);
 	const [tab, setTab] = useState('image'),
 		[dialogOpen, setDialogOpen] = useState(false),
-		[toDownload, setToDownload] = useState(false);
+		[toDownload, setToDownload] = useState(false),
+		[toRecord, setToRecord] = useState(false);
 
 	return (
 		<Dialog
@@ -422,7 +422,7 @@ export const component = (oldProps: Props = defaultProps) => {
 							)}
 
 							<Button
-								className="mt-p cursor-pointer col-span-4 h-9 mt-auto self-end"
+								className="cursor-pointer col-span-4 h-9 mt-auto self-end"
 								variant="outline"
 								size="sm"
 								onClick={() => setToDownload(true)}>
@@ -430,7 +430,82 @@ export const component = (oldProps: Props = defaultProps) => {
 							</Button>
 						</div>
 					</TabsContent>
-					<TabsContent value="video">Lol</TabsContent>
+					<TabsContent value="video">
+						<div className="grid grid-cols-12 auto-rows-fr gap-p w-full">
+							{Object.entries(params).map(
+								(
+									[
+										key,
+										{
+											label,
+											default: defaultValue,
+											props: {
+												className,
+												...paramsProps
+											},
+										},
+									],
+									index
+								) => (
+									<span
+										key={index + key}
+										className={cn(
+											'flex flex-col gap-1 text-sm',
+											className
+										)}
+										{...paramsProps}>
+										{label}
+										<Input
+											type={
+												typeof defaultValue ===
+												'number'
+													? 'number'
+													: 'text'
+											}
+											className="w-full"
+											onChange={e => {
+												if (
+													!e.target.value?.trim()
+														.length
+												)
+													return;
+												setProps({
+													...props,
+													[key]:
+														typeof defaultValue ===
+														'number'
+															? parseInt(
+																	e
+																		.target
+																		.value
+															  )
+															: e.target
+																	.value,
+												});
+											}}
+											defaultValue={
+												props[label] ?? defaultValue
+											}
+										/>
+									</span>
+								)
+							)}
+
+							<Button
+								className="relative cursor-pointer col-span-4 h-9 mt-auto self-end"
+								variant="outline"
+								size="sm"
+								onClick={() => setToRecord(prev => !prev)}>
+								{toRecord && (
+									<>
+										<span className="z-20 absolute top-0 right-0 translate-x-1 -translate-y-1 bg-red-500/75 rounded-full size-3 scale-65" />
+										<span className="z-30 absolute top-0 right-0 translate-x-1 -translate-y-1 bg-red-500/85 rounded-full size-3 animate-pulse duration-800 [animation-timing-function:cubic-bezier(0.4,0,.2,.4,1)]" />
+									</>
+								)}
+								{`${toRecord ? 'Stop' : 'Record'}`}
+							</Button>
+						</div>
+					</TabsContent>
 				</Tabs>
 
 				<Separator
@@ -446,8 +521,8 @@ export const component = (oldProps: Props = defaultProps) => {
 						/>
 					) : (
 						<Video
-							download={toDownload}
-							onDownload={() => setToDownload(false)}
+							key={toRecord ? 'video-recording' : 'video-stopped'}
+							recording={toRecord}
 							{...props}
 						/>
 					)}
