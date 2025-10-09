@@ -302,6 +302,8 @@ export const Video = (
 					}),
 				});
 
+				console.log(response);
+
 				if (!response.ok) {
 					throw new Error(`Errore HTTP: ${response.status}`);
 				}
