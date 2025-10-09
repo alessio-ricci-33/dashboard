@@ -66,7 +66,7 @@ export const dynamicParams = {
 	offsetY: {
 		type: Number,
 		label: 'Y Offsets',
-		default: 120,
+		default: 80,
 		props: {
 			className: 'col-span-4',
 		},
@@ -78,7 +78,7 @@ export const dynamicParams = {
 	startDelay: {
 		type: Number,
 		label: 'Delays',
-		default: 1.2,
+		default: 0.8,
 		props: {
 			className: 'col-span-2',
 		},
@@ -101,7 +101,7 @@ export const dynamicParams = {
 	fadeIn: {
 		type: Number,
 		label: 'Fade in',
-		default: 1.2,
+		default: 0.7,
 		props: {
 			className: 'col-span-4',
 		},
@@ -113,7 +113,7 @@ export const dynamicParams = {
 	fadeOut: {
 		type: Number,
 		label: 'Fade out',
-		default: 0.85,
+		default: 0.3,
 		props: {
 			className: 'col-span-4',
 		},
