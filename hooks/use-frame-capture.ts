@@ -20,6 +20,13 @@ export function useFrameCapture(
 		console.log('useFrameCapture', framesRef.current.length, stageRef.current, isRecording);
 
 		if (!stageRef.current) return;
+		const canvas = stageRef.current?.toCanvas();
+		const ctx = canvas.getContext('2d');
+
+		if (ctx) {
+			ctx.imageSmoothingEnabled = true;
+			ctx.imageSmoothingQuality = 'high';
+		}
 
 		if (!isRecording && framesRef.current.length > 0) {
 			// Calcolo FPS medio
