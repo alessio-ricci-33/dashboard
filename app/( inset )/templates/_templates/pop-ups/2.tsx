@@ -284,6 +284,7 @@ export const Video = (
 
 	useFrameCapture(stageRef, isRecording, {
 		format: 'uri',
+		targetFps: 60,
 		onComplete: async (frames, fps) => {
 			try {
 				const response = await fetch('https://server.msgi.it/render-video', {
