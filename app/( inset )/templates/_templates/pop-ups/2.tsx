@@ -22,13 +22,19 @@ export const params = {
 		props: {
 			className: 'col-span-4',
 		},
+		inputProps: {
+			className: 'text-start',
+		},
 	},
 	message: {
 		type: String,
-		label: 'Messaggio del popup',
-		default: 'Testo desiderato...',
+		label: 'Popup message',
+		default: 'Your message...',
 		props: {
 			className: 'col-start-5 -col-end-1',
+		},
+		inputProps: {
+			className: 'text-start',
 		},
 	},
 	height: {
@@ -57,6 +63,41 @@ export const params = {
 
 export const dynamicParams = {
 	...params,
+	offsetY: {
+		type: Number,
+		label: 'Y Offsets',
+		default: 120,
+		props: {
+			className: 'col-span-4',
+		},
+		inputProps: {
+			step: 2.5,
+		},
+	},
+
+	startDelay: {
+		type: Number,
+		label: 'Delays',
+		default: 1.2,
+		props: {
+			className: 'col-span-2',
+		},
+		inputProps: {
+			step: 0.1,
+		},
+	},
+	freeze: {
+		type: Number,
+		label: '',
+		default: 1.5,
+		props: {
+			className: 'col-span-2',
+		},
+		inputProps: {
+			step: 0.1,
+		},
+	},
+
 	fadeIn: {
 		type: Number,
 		label: 'Fade in',
@@ -68,6 +109,7 @@ export const dynamicParams = {
 			step: 0.1,
 		},
 	},
+
 	fadeOut: {
 		type: Number,
 		label: 'Fade out',
@@ -79,34 +121,26 @@ export const dynamicParams = {
 			step: 0.1,
 		},
 	},
-	startDelay: {
+	opacityFrom: {
 		type: Number,
-		label: 'Start delay',
-		default: 1.2,
+		label: 'Opacity',
+		default: 0,
 		props: {
-			className: 'col-span-4',
+			className: 'col-span-2',
 		},
 		inputProps: {
-			step: 0.1,
+			step: 0.05,
 		},
 	},
-	freeze: {
+	opacityTo: {
 		type: Number,
-		label: 'Freeze',
+		label: '',
 		default: 1,
 		props: {
-			className: 'col-span-4',
-		},
-	},
-	endDelay: {
-		type: Number,
-		label: 'End delay',
-		default: 0.85,
-		props: {
-			className: 'col-span-4',
+			className: 'col-span-2',
 		},
 		inputProps: {
-			step: 0.1,
+			step: 0.05,
 		},
 	},
 } as const;
@@ -253,7 +287,9 @@ export const Video = (
 		fadeOut: props.fadeOut * 1000,
 		startDelay: props.startDelay * 1000,
 		freeze: props.freeze * 1000,
-		endDelay: props.endDelay * 1000,
+		offsetY: props.offsetY,
+		opacityFrom: props.opacityFrom,
+		opacityTo: props.opacityTo,
 	});
 
 	useEffect(() => {
@@ -269,9 +305,20 @@ export const Video = (
 			fadeOut: props.fadeOut * 1000,
 			startDelay: props.startDelay * 1000,
 			freeze: props.freeze * 1000,
-			endDelay: props.endDelay * 1000,
+			offsetY: props.offsetY,
+			opacityFrom: props.opacityFrom,
+			opacityTo: props.opacityTo,
 		});
-	}, [props.record, props.fadeIn, props.fadeOut]);
+	}, [
+		props.record,
+		props.fadeIn,
+		props.fadeOut,
+		props.startDelay,
+		props.freeze,
+		props.offsetY,
+		props.opacityFrom,
+		props.opacityTo,
+	]);
 
 	useFrameCapture(stageRef, isRecording, {
 		format: 'blob',
@@ -308,14 +355,17 @@ export const Video = (
 			ref={stageRef}
 			style={{ backgroundColor: 'transparent' }}
 			options={{ preserveDrawingBuffer: true }}
-			height={height + PADDING * 2 + 120}
+			height={height + PADDING * 2 + props.offsetY}
 			width={width + PADDING * 2}>
 			{/* @ts-ignore */}
 			<animated.Layer
 				key={`${props.fadeIn}-${props.fadeOut}-${isRecording}`}
 				{...$({
-					from: { opacity: 0, y: 0 },
-					to: { opacity: toFadeIn ? 1 : 0, y: toFadeIn ? 120 : 0 },
+					from: { opacity: props.opacityFrom, y: 0 },
+					to: {
+						opacity: toFadeIn ? props.opacityTo : props.opacityFrom,
+						y: toFadeIn ? props.offsetY : 0,
+					},
 					config: {
 						tension: 20,
 						friction: 20,
@@ -449,7 +499,7 @@ export const component = () => {
 						<TabsTrigger value="video">Video</TabsTrigger>
 					</TabsList>
 					<TabsContent value="image">
-						<div className="grid grid-cols-[repeat(12,1rem)] auto-rows-fr gap-p w-full">
+						<div className="grid grid-cols-[repeat(12,1.17rem)] auto-rows-fr gap-p w-full">
 							{Object.entries(params).map(
 								(
 									[
@@ -519,7 +569,7 @@ export const component = () => {
 						</div>
 					</TabsContent>
 					<TabsContent value="video">
-						<div className="grid grid-cols-[repeat(16,1rem)] auto-rows-fr gap-p w-full">
+						<div className="grid grid-cols-[repeat(16,1.17rem)] auto-rows-fr gap-p w-full">
 							{Object.entries(dynamicParams).map(
 								(
 									[
@@ -539,7 +589,7 @@ export const component = () => {
 									<span
 										key={index + key}
 										className={cn(
-											'flex flex-col gap-1 text-sm',
+											'flex flex-col justify-between gap-1 text-sm',
 											className
 										)}
 										{...paramsProps}>
@@ -551,7 +601,7 @@ export const component = () => {
 													? 'number'
 													: 'text'
 											}
-											className="w-full"
+											className="w-full self-end justify-self-end mt-auto"
 											onChange={e => {
 												if (
 													!e.target.value?.trim()
