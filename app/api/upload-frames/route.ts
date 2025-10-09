@@ -58,19 +58,21 @@ export const POST = async (request: Request) =>
 
 		const folder = `tmp/${assetName}`;
 
-		await deleteFolderRecursively(folder);
+		try {
+			await deleteFolderRecursively(folder);
+		} finally {
+			const results = await Promise.all(
+				files
+					.filter(file => file.name && file.size > 0) // Filtra gli elementi vuoti
+					.map((file, index) => uploadFrame({ file, index, folder }))
+			);
 
-		const results = await Promise.all(
-			files
-				.filter(file => file.name && file.size > 0) // Filtra gli elementi vuoti
-				.map((file, index) => uploadFrame({ file, index, folder }))
-		);
-
-		return NextResponse.json(
-			{
-				message: `Upload di ${results.length} frame completato.`,
-				uploadedFrames: results,
-			},
-			{ status: 200 }
-		);
+			return NextResponse.json(
+				{
+					message: `Upload di ${results.length} frame completato.`,
+					uploadedFrames: results,
+				},
+				{ status: 200 }
+			);
+		}
 	});

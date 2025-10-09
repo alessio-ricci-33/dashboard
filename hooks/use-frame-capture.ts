@@ -17,6 +17,8 @@ export function useFrameCapture(
 	const frameTimestampsRef = useRef<number[]>([]);
 
 	useEffect(() => {
+		console.log('useFrameCapture', framesRef.current.length, stageRef.current, isRecording);
+
 		if (!stageRef.current) return;
 
 		if (!isRecording && framesRef.current.length > 0) {
@@ -28,6 +30,12 @@ export function useFrameCapture(
 			}
 			const averageFps = framesRef.current.length / (totalDuration / 1000);
 			const roundedFps = Math.round(averageFps);
+
+			console.log(
+				'onComplete => useFrameCapture',
+				framesRef.current.length,
+				roundedFps
+			);
 
 			if (onComplete) onComplete(framesRef.current, roundedFps);
 
@@ -42,7 +50,9 @@ export function useFrameCapture(
 
 			const canvas = stageRef.current.toCanvas();
 			const ctx = canvas.getContext('2d');
+
 			if (!ctx) return;
+
 			ctx.imageSmoothingEnabled = true;
 			ctx.imageSmoothingQuality = 'high';
 

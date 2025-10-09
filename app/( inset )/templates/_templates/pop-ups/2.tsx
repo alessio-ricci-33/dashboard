@@ -273,7 +273,8 @@ export const Video = (
 	const stageRef = useRef<any>(null),
 		[isRecording, setIsRecording] = useState(props.record ?? false);
 
-	const [toFadeIn, setToFadeIn] = useState(false);
+	const [toFadeIn, setToFadeIn] = useState(false),
+		[toFadeOut, setToFadeOut] = useState(false);
 
 	useEffect(() => {
 		setTimeout(() => {
@@ -288,8 +289,7 @@ export const Video = (
 	useFrameCapture(stageRef, isRecording, {
 		format: 'blob',
 		onComplete: async (frames, fps) => {
-			if (!frames.length) return;
-
+			console.log(frames);
 			const formData = new FormData();
 			formData.append('fps', fps.toString());
 			formData.append('assetName', 'popup-island');
@@ -300,11 +300,13 @@ export const Video = (
 				method: 'POST',
 				body: formData,
 			});
+
 			if (!response.ok) {
 				console.error('Errore upload frame');
 				return;
 			}
 			console.log('Upload completato');
+			if (props.onStopRecording) props.onStopRecording();
 		},
 	});
 
@@ -326,120 +328,131 @@ export const Video = (
 			options={{ preserveDrawingBuffer: true }}
 			height={height + PADDING * 2 + props.offsetY}
 			width={width + PADDING * 2}>
-			{/* @ts-ignore */}
-			<animated.Layer
-				key={JSON.stringify(props)}
-				{...$({
-					from: { opacity: props.opacityFrom, y: 0 },
-					to: {
-						opacity: toFadeIn ? props.opacityTo : props.opacityFrom,
-						y: toFadeIn ? props.offsetY : 0,
-					},
-					config: {
-						tension: 20,
-						friction: 20,
-						duration: toFadeIn ? animation.fadeIn : animation.fadeOut,
-					},
-					onRest: async () => {
-						if (toFadeIn) {
-							await new Promise(r => setTimeout(r, animation.freeze));
-							return setToFadeIn(false);
-						}
+			<Layer key={JSON.stringify(props)}>
+				{/* @ts-ignore */}
 
-						await new Promise(r => setTimeout(r, animation.fadeOut + 500));
+				<animated.Group
+					{...$({
+						from: { opacity: props.opacityFrom, y: 0 },
+						to: {
+							opacity: toFadeIn ? props.opacityTo : props.opacityFrom,
+							y: toFadeIn ? props.offsetY : 0,
+						},
+						config: {
+							tension: 200,
+							friction: 20,
+							duration: toFadeIn ? animation.fadeIn : animation.fadeOut,
+						},
+						onResolve: async () => {
+							if (toFadeIn) {
+								await new Promise(r =>
+									setTimeout(r, animation.freeze)
+								);
+								setToFadeOut(true);
+								return setToFadeIn(false);
+							}
 
-						setIsRecording(false);
-						if (props.onStopRecording) props.onStopRecording();
-					},
-				})}>
-				<Rect
-					x={PADDING}
-					y={PADDING - 0.5}
-					width={width}
-					height={height}
-					fill="#000000"
-					cornerRadius={35}
-					stroke="#000000" // colore del bordo
-					strokeWidth={0.5}
-					shadowBlur={16}
-					shadowColor="#ffffff"
-					shadowOpacity={0.4}
-					shadowOffsetY={0.5}
-				/>
+							if (!toFadeIn && toFadeOut) {
+								await new Promise(r =>
+									setTimeout(r, animation.fadeOut + 500)
+								);
 
-				<Rect
-					x={PADDING}
-					y={PADDING}
-					width={width}
-					height={height}
-					fillLinearGradientStartPoint={{ x: 0.8, y: -10 }}
-					fillLinearGradientEndPoint={{ x: -0.8, y: height }}
-					fillLinearGradientColorStops={[0, '#2f2f32', 0.85, '#000000']}
-					stroke="#2f2f32" // colore del bordo
-					strokeWidth={1}
-					cornerRadius={35}
-					shadowBlur={6}
-					shadowColor="#000000"
-					shadowOpacity={1}
-					shadowOffsetY={-0.5}
-				/>
-
-				<Group x={PADDING + 12} y={PADDING + 10}>
-					{/* Immagine locale sopra il rettangolo */}
-					<LocalImage
-						x={-1}
-						y={-1}
-						src="/messaggi-italia.png" // immagine salvata in public/images/logo.png
-						height={height - PADDING + 2}
-						shadowColor="#15171c"
-						shadowBlur={7}
+								setIsRecording(false);
+								console.log('STOP RECORDING');
+							}
+						},
+					})}>
+					<Rect
+						x={PADDING}
+						y={PADDING - 0.5}
+						width={width}
+						height={height}
+						fill="#000000"
+						cornerRadius={35}
+						stroke="#000000" // colore del bordo
+						strokeWidth={0.5}
+						shadowBlur={16}
+						shadowColor="#ffffff"
+						shadowOpacity={0.4}
+						shadowOffsetY={0.5}
 					/>
 
-					<Group x={height - PADDING + 8}>
-						<Text
-							y={-2}
-							fontSize={19}
-							lineHeight={1}
-							text={brandName}
-							fontFamily="logo" // deve corrispondere al nome definito in @font-face
-							fill="white"
-							opacity={0.75}
-						/>
-						<Text
-							y={PADDING}
-							fontSize={17}
-							lineHeight={1}
-							text={message}
-							fontFamily="secondary" // deve corrispondere al nome definito in @font-face
-							fill="white"
-						/>
-					</Group>
+					<Rect
+						x={PADDING}
+						y={PADDING}
+						width={width}
+						height={height}
+						fillLinearGradientStartPoint={{ x: 0.8, y: -10 }}
+						fillLinearGradientEndPoint={{ x: -0.8, y: height }}
+						fillLinearGradientColorStops={[0, '#2f2f32', 0.85, '#000000']}
+						stroke="#2f2f32" // colore del bordo
+						strokeWidth={1}
+						cornerRadius={35}
+						shadowBlur={6}
+						shadowColor="#000000"
+						shadowOpacity={1}
+						shadowOffsetY={-0.5}
+					/>
 
-					<Group x={width - PADDING * 2 - 2} y={(height - PADDING) / 2 - 0.5}>
-						<Circle
-							radius={999}
-							fill="#15171c"
-							shadowBlur={7}
-							shadowColor="#ffffff"
-							shadowOpacity={0.4}
+					<Group x={PADDING + 12} y={PADDING + 10}>
+						{/* Immagine locale sopra il rettangolo */}
+						<LocalImage
+							x={-1}
+							y={-1}
+							src="/messaggi-italia.png" // immagine salvata in public/images/logo.png
 							height={height - PADDING + 2}
-							width={height - PADDING + 2}
+							shadowColor="#15171c"
+							shadowBlur={7}
 						/>
-						<SvgIconImage
-							Icon={
-								<ImArrowUpRight2
-									size={21}
-									color="white"
-									opacity={0.55}
-								/>
-							}
-							height={21}
-							x={-height / 2 + PADDING - 2}
-							y={-PADDING / 2}
-						/>
+
+						<Group x={height - PADDING + 8}>
+							<Text
+								y={-2}
+								fontSize={19}
+								lineHeight={1}
+								text={brandName}
+								fontFamily="logo" // deve corrispondere al nome definito in @font-face
+								fill="white"
+								opacity={0.75}
+							/>
+							<Text
+								y={PADDING}
+								fontSize={17}
+								lineHeight={1}
+								text={message}
+								fontFamily="secondary" // deve corrispondere al nome definito in @font-face
+								fill="white"
+							/>
+						</Group>
+
+						<Group
+							x={width - PADDING * 2 - 2}
+							y={(height - PADDING) / 2 - 0.5}>
+							<Circle
+								radius={999}
+								fill="#15171c"
+								shadowBlur={7}
+								shadowColor="#ffffff"
+								shadowOpacity={0.4}
+								height={height - PADDING + 2}
+								width={height - PADDING + 2}
+							/>
+							<SvgIconImage
+								Icon={
+									<ImArrowUpRight2
+										size={21}
+										color="white"
+										opacity={0.55}
+									/>
+								}
+								height={21}
+								x={-height / 2 + PADDING - 2}
+								y={-PADDING / 2}
+							/>
+						</Group>
 					</Group>
-				</Group>
-			</animated.Layer>
+				</animated.Group>
+			</Layer>
 		</Stage>
 	);
 };
