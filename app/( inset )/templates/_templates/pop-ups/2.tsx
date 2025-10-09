@@ -282,15 +282,11 @@ export const Video = (
 		}, props.startDelay * 1000);
 	}, [props]);
 
-	useEffect(() => {
-		setIsRecording(props.record ?? false);
-	}, [props.record]);
-
 	useFrameCapture(stageRef, isRecording, {
 		format: 'uri',
 		onComplete: async (frames, fps) => {
 			try {
-				const response = await fetch('https://service.msgi.it/render-video', {
+				const response = await fetch('https://server.msgi.it/render-video', {
 					method: 'POST',
 					headers: {
 						'Content-Type': 'application/json',
@@ -302,8 +298,6 @@ export const Video = (
 					}),
 				});
 
-				console.log(response);
-
 				if (!response.ok) {
 					throw new Error(`Errore HTTP: ${response.status}`);
 				}
@@ -312,7 +306,7 @@ export const Video = (
 				const url = window.URL.createObjectURL(blob);
 				const a = document.createElement('a');
 				a.href = url;
-				a.download = 'chat-story-final.mov';
+				a.download = 'popup-island.mov';
 				document.body.appendChild(a);
 				a.click();
 				a.remove();
@@ -675,10 +669,11 @@ export const component = () => {
 					) : (
 						<Video
 							// @ts-ignore
-							key={
-								(toRecord ? `video-recording` : 'video-stopped') +
-								JSON.stringify(props, null, 2)
-							}
+							key={`video-${toRecord}-${JSON.stringify(
+								props,
+								null,
+								2
+							)}`}
 							record={toRecord}
 							onStopRecording={() => setToRecord(false)}
 							{...props}
