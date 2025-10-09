@@ -367,7 +367,7 @@ export const component = (oldProps: Props = defaultProps) => {
 			<DialogContent
 				key={'dialog-content'}
 				className="flex flex-row items-center gap-p p-p border border-zinc-600/50 !max-w-none w-max shadow-[0_0_7px_-1px_#b0e9ff4a]">
-				<div className="grid grid-cols-12 auto-rows-fr justify-items-start gap-p szie-full self-start">
+				<div className="grid grid-cols-12 auto-rows-fr justify-items-start gap-p size-full self-start">
 					{Object.entries(params).map(
 						(
 							[
