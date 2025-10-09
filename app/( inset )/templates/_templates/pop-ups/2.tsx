@@ -357,8 +357,9 @@ export const Video = (
 							y: toFadeIn ? props.offsetY : 0,
 						},
 						config: {
-							tension: 200,
-							friction: 20,
+							tension: isRecording ? 280 : 170,
+							friction: isRecording ? 22 : 26,
+							precision: 0.00001,
 							duration: toFadeIn ? animation.fadeIn : animation.fadeOut,
 						},
 						onResolve: async () => {
