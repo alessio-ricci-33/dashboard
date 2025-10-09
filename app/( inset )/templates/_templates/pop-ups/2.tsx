@@ -160,14 +160,7 @@ const PADDING = 20;
 export const Image = (
 	props = defaultProps as Props & { download?: boolean; onDownload?: () => void }
 ) => {
-	const localProps = Object.entries(params).reduce((acc, [key, { default: defaultValue }]) => {
-		if (props[key]) acc[key] = props[key];
-		else acc[key] = defaultValue;
-
-		return acc;
-	}, {} as Props);
-
-	const { height, width, brandName, message } = { ...localProps, ...props };
+	const { height, width, brandName, message } = { ...defaultProps, ...props };
 
 	return (
 		<DownloadableCanvas
@@ -281,8 +274,42 @@ export const Video = (
 		[isRecording, setIsRecording] = useState(props.record ?? false);
 
 	const [toFadeIn, setToFadeIn] = useState(false);
-	const [showAnswer, setShowAnswer] = useState(false);
-	const [animation, setAnimation] = useState({
+
+	useEffect(() => {
+		setTimeout(() => {
+			setToFadeIn(true);
+		}, props.startDelay * 1000);
+	}, [props]);
+
+	useEffect(() => {
+		setIsRecording(props.record ?? false);
+	}, [props.record]);
+
+	useFrameCapture(stageRef, isRecording, {
+		format: 'blob',
+		onComplete: async (frames, fps) => {
+			if (!frames.length) return;
+
+			const formData = new FormData();
+			formData.append('fps', fps.toString());
+			formData.append('assetName', 'popup-island');
+			frames.forEach((frame, i) => {
+				formData.append(`frames`, frame as Blob);
+			});
+			const response = await fetch('/api/upload-frames', {
+				method: 'POST',
+				body: formData,
+			});
+			if (!response.ok) {
+				console.error('Errore upload frame');
+				return;
+			}
+			console.log('Upload completato');
+		},
+	});
+
+	const { height, width, brandName, message } = { ...defaultDynamicProps, ...props };
+	const animation = {
 		fadeIn: props.fadeIn * 1000,
 		fadeOut: props.fadeOut * 1000,
 		startDelay: props.startDelay * 1000,
@@ -290,65 +317,7 @@ export const Video = (
 		offsetY: props.offsetY,
 		opacityFrom: props.opacityFrom,
 		opacityTo: props.opacityTo,
-	});
-
-	useEffect(() => {
-		setTimeout(() => {
-			setToFadeIn(true);
-		}, props.startDelay * 1000);
-	}, [props.startDelay]);
-
-	useEffect(() => {
-		setIsRecording(props.record ?? false);
-		setAnimation({
-			fadeIn: props.fadeIn * 1000,
-			fadeOut: props.fadeOut * 1000,
-			startDelay: props.startDelay * 1000,
-			freeze: props.freeze * 1000,
-			offsetY: props.offsetY,
-			opacityFrom: props.opacityFrom,
-			opacityTo: props.opacityTo,
-		});
-	}, [
-		props.record,
-		props.fadeIn,
-		props.fadeOut,
-		props.startDelay,
-		props.freeze,
-		props.offsetY,
-		props.opacityFrom,
-		props.opacityTo,
-	]);
-
-	useFrameCapture(stageRef, isRecording, {
-		format: 'blob',
-		onComplete: async (frames, fps) => {
-			// const formData = new FormData();
-			// formData.append('fps', fps.toString());
-			// formData.append('assetName', 'popup-island');
-			// frames.forEach((frame, i) => {
-			// 	formData.append(`frames`, frame as Blob);
-			// });
-			// const response = await fetch('/api/upload-frames', {
-			// 	method: 'POST',
-			// 	body: formData,
-			// });
-			// if (!response.ok) {
-			// 	console.error('Errore upload frame');
-			// 	return;
-			// }
-			// console.log('Upload completato');
-		},
-	});
-
-	const localProps = Object.entries(params).reduce((acc, [key, { default: defaultValue }]) => {
-		if (props[key]) acc[key] = props[key];
-		else acc[key] = defaultValue;
-
-		return acc;
-	}, {} as Props);
-
-	const { height, width, brandName, message } = { ...localProps, ...props };
+	};
 
 	return (
 		<Stage
@@ -359,7 +328,7 @@ export const Video = (
 			width={width + PADDING * 2}>
 			{/* @ts-ignore */}
 			<animated.Layer
-				key={`${props.fadeIn}-${props.fadeOut}-${isRecording}`}
+				key={JSON.stringify(props)}
 				{...$({
 					from: { opacity: props.opacityFrom, y: 0 },
 					to: {
@@ -374,8 +343,12 @@ export const Video = (
 					onRest: async () => {
 						if (toFadeIn) {
 							await new Promise(r => setTimeout(r, animation.freeze));
-							setToFadeIn(false);
+							return setToFadeIn(false);
 						}
+
+						setIsRecording(false);
+
+						if (props.onStopRecording) props.onStopRecording();
 					},
 				})}>
 				<Rect
@@ -477,6 +450,8 @@ export const component = () => {
 		[toRecord, setToRecord] = useState(false);
 
 	const [props, setProps] = useState(tab === 'image' ? defaultProps : defaultDynamicProps);
+
+	useEffect(() => setProps(tab === 'image' ? defaultProps : defaultDynamicProps), [tab]);
 
 	return (
 		<Dialog
@@ -667,6 +642,7 @@ export const component = () => {
 								JSON.stringify(props, null, 2)
 							}
 							record={toRecord}
+							onStopRecording={() => setToRecord(false)}
 							{...props}
 						/>
 					)}
