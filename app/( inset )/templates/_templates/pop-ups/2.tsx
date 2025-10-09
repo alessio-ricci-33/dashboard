@@ -346,8 +346,9 @@ export const Video = (
 							return setToFadeIn(false);
 						}
 
-						setIsRecording(false);
+						await new Promise(r => setTimeout(r, animation.fadeOut + 500));
 
+						setIsRecording(false);
 						if (props.onStopRecording) props.onStopRecording();
 					},
 				})}>
