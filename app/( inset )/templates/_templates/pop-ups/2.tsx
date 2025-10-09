@@ -287,26 +287,48 @@ export const Video = (
 	}, [props.record]);
 
 	useFrameCapture(stageRef, isRecording, {
-		format: 'blob',
+		format: 'uri',
 		onComplete: async (frames, fps) => {
-			console.log(frames);
-			const formData = new FormData();
-			formData.append('fps', fps.toString());
-			formData.append('assetName', 'popup-island');
-			frames.forEach((frame, i) => {
-				formData.append(`frames`, frame as Blob);
-			});
-			const response = await fetch('/api/upload-frames', {
-				method: 'POST',
-				body: formData,
-			});
+			try {
+				const response = await fetch('https://service.msgi.it/render-video', {
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/json',
+					},
+					// Invia l'array di frame e gli FPS calcolati
+					body: JSON.stringify({
+						frames,
+						fps,
+					}),
+				});
 
-			if (!response.ok) {
-				console.error('Errore upload frame');
-				return;
+				if (!response.ok) {
+					throw new Error(`Errore HTTP: ${response.status}`);
+				}
+
+				const blob = await response.blob();
+				const url = window.URL.createObjectURL(blob);
+				const a = document.createElement('a');
+				a.href = url;
+				a.download = 'chat-story-final.mov';
+				document.body.appendChild(a);
+				a.click();
+				a.remove();
+				window.URL.revokeObjectURL(url);
+
+				console.log('Video scaricato con successo!');
+			} catch (error) {
+				console.error(
+					"Errore durante l'invio dei frame o il download del video:",
+					error
+				);
+				alert(
+					'Si è verificato un errore durante la creazione del video. Controlla la console.'
+				);
+			} finally {
+				console.log('Upload completato');
+				if (props.onStopRecording) props.onStopRecording();
 			}
-			console.log('Upload completato');
-			if (props.onStopRecording) props.onStopRecording();
 		},
 	});
 
