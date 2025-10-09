@@ -23,12 +23,23 @@ export const params = {
 			className: 'col-span-4',
 		},
 	},
+	message: {
+		type: String,
+		label: 'Messaggio del popup',
+		default: 'Testo desiderato...',
+		props: {
+			className: 'col-start-5 -col-end-1',
+		},
+	},
 	height: {
 		type: Number,
 		label: 'Height',
 		default: 57,
 		props: {
 			className: 'col-span-4',
+		},
+		inputProps: {
+			step: 2.5,
 		},
 	},
 	width: {
@@ -38,19 +49,74 @@ export const params = {
 		props: {
 			className: 'col-span-4',
 		},
+		inputProps: {
+			step: 5,
+		},
 	},
+} as const;
 
-	message: {
-		type: String,
-		label: 'Messaggio del popup',
-		default: 'Testo desiderato...',
+export const dynamicParams = {
+	...params,
+	fadeIn: {
+		type: Number,
+		label: 'Fade in',
+		default: 1.2,
 		props: {
-			className: 'col-span-8',
+			className: 'col-span-4',
+		},
+		inputProps: {
+			step: 0.1,
+		},
+	},
+	fadeOut: {
+		type: Number,
+		label: 'Fade out',
+		default: 0.85,
+		props: {
+			className: 'col-span-4',
+		},
+		inputProps: {
+			step: 0.1,
+		},
+	},
+	startDelay: {
+		type: Number,
+		label: 'Start delay',
+		default: 1.2,
+		props: {
+			className: 'col-span-4',
+		},
+		inputProps: {
+			step: 0.1,
+		},
+	},
+	freeze: {
+		type: Number,
+		label: 'Freeze',
+		default: 1,
+		props: {
+			className: 'col-span-4',
+		},
+	},
+	endDelay: {
+		type: Number,
+		label: 'End delay',
+		default: 0.85,
+		props: {
+			className: 'col-span-4',
+		},
+		inputProps: {
+			step: 0.1,
 		},
 	},
 } as const;
 
 export const defaultProps: Props = Object.entries(params).reduce(
+	(acc, [key, { default: defaultValue }]) => ({ ...acc, [key]: defaultValue }),
+	{}
+);
+
+export const defaultDynamicProps: DynamicProps = Object.entries(dynamicParams).reduce(
 	(acc, [key, { default: defaultValue }]) => ({ ...acc, [key]: defaultValue }),
 	{}
 );
@@ -172,30 +238,40 @@ export const Image = (
 };
 
 export const Video = (
-	props = defaultProps as Props & { recording?: boolean; onStopRecording?: () => void }
+	props = defaultDynamicProps as DynamicProps & {
+		record?: boolean;
+		onStopRecording?: () => void;
+	}
 ) => {
 	const stageRef = useRef<any>(null),
-		[isRecording, setIsRecording] = useState(props.recording ?? false);
+		[isRecording, setIsRecording] = useState(props.record ?? false);
 
-	const [toFadeIn, setToFadeIn] = useState(true);
+	const [toFadeIn, setToFadeIn] = useState(false);
 	const [showAnswer, setShowAnswer] = useState(false);
+	const [animation, setAnimation] = useState({
+		fadeIn: props.fadeIn * 1000,
+		fadeOut: props.fadeOut * 1000,
+		startDelay: props.startDelay * 1000,
+		freeze: props.freeze * 1000,
+		endDelay: props.endDelay * 1000,
+	});
 
 	useEffect(() => {
-		setIsRecording(props.recording ?? false);
-	}, [props.recording]);
-
-	useEffect(() => {
-		let timer: NodeJS.Timeout; // image dopo typing
 		setTimeout(() => {
-			setTimeout(async () => {
-				setShowAnswer(true);
-				await new Promise(r => setTimeout(r, 7000));
-				setIsRecording(false);
-			}, 1000);
-		}, 2000);
+			setToFadeIn(true);
+		}, props.startDelay * 1000);
+	}, [props.startDelay]);
 
-		return () => clearTimeout(timer);
-	}, []);
+	useEffect(() => {
+		setIsRecording(props.record ?? false);
+		setAnimation({
+			fadeIn: props.fadeIn * 1000,
+			fadeOut: props.fadeOut * 1000,
+			startDelay: props.startDelay * 1000,
+			freeze: props.freeze * 1000,
+			endDelay: props.endDelay * 1000,
+		});
+	}, [props.record, props.fadeIn, props.fadeOut]);
 
 	useFrameCapture(stageRef, isRecording, {
 		format: 'blob',
@@ -236,37 +312,52 @@ export const Video = (
 			width={width + PADDING * 2}>
 			{/* @ts-ignore */}
 			<animated.Layer
+				key={`${props.fadeIn}-${props.fadeOut}-${isRecording}`}
 				{...$({
 					from: { opacity: 0, y: 0 },
 					to: { opacity: toFadeIn ? 1 : 0, y: toFadeIn ? 120 : 0 },
-					config: { tension: 200, friction: 20, duration: 1250 },
+					config: {
+						tension: 20,
+						friction: 20,
+						duration: toFadeIn ? animation.fadeIn : animation.fadeOut,
+					},
+					onRest: async () => {
+						if (toFadeIn) {
+							await new Promise(r => setTimeout(r, animation.freeze));
+							setToFadeIn(false);
+						}
+					},
 				})}>
 				<Rect
-					x={PADDING + 0.5}
-					y={PADDING + 0.5}
-					width={width - 1}
-					height={height - 1}
-					fill="transparent"
-					shadowBlur={2}
+					x={PADDING}
+					y={PADDING - 0.5}
+					width={width}
+					height={height}
+					fill="#000000"
 					cornerRadius={35}
-					shadowColor="#000000"
-					shadowOpacity={1}
-					shadowOffsetY={2}
+					stroke="#000000" // colore del bordo
+					strokeWidth={0.5}
+					shadowBlur={16}
+					shadowColor="#ffffff"
+					shadowOpacity={0.4}
+					shadowOffsetY={0.5}
 				/>
+
 				<Rect
 					x={PADDING}
 					y={PADDING}
 					width={width}
 					height={height}
-					fillLinearGradientStartPoint={{ x: 0, y: 0 }}
-					fillLinearGradientEndPoint={{ x: 0, y: height }}
+					fillLinearGradientStartPoint={{ x: 0.8, y: -10 }}
+					fillLinearGradientEndPoint={{ x: -0.8, y: height }}
 					fillLinearGradientColorStops={[0, '#2f2f32', 0.85, '#000000']}
-					shadowBlur={16}
-					cornerRadius={35}
-					shadowColor="#ffffff"
-					shadowOpacity={0.4}
 					stroke="#2f2f32" // colore del bordo
-					strokeWidth={0.5}
+					strokeWidth={1}
+					cornerRadius={35}
+					shadowBlur={6}
+					shadowColor="#000000"
+					shadowOpacity={1}
+					shadowOffsetY={-0.5}
 				/>
 
 				<Group x={PADDING + 12} y={PADDING + 10}>
@@ -280,7 +371,7 @@ export const Video = (
 						shadowBlur={7}
 					/>
 
-					<Group x={height - PADDING + 8} y={height / 2 - 30}>
+					<Group x={height - PADDING + 8}>
 						<Text
 							y={-2}
 							fontSize={19}
@@ -300,11 +391,7 @@ export const Video = (
 						/>
 					</Group>
 
-					<Group
-						x={width - PADDING * 2 - 2}
-						y={(height - PADDING) / 2 - 0.5}
-						width={height - PADDING + 2}
-						height={height - PADDING + 2}>
+					<Group x={width - PADDING * 2 - 2} y={(height - PADDING) / 2 - 0.5}>
 						<Circle
 							radius={999}
 							fill="#15171c"
@@ -323,7 +410,7 @@ export const Video = (
 								/>
 							}
 							height={21}
-							x={-10.5}
+							x={-height / 2 + PADDING - 2}
 							y={-PADDING / 2}
 						/>
 					</Group>
@@ -333,12 +420,13 @@ export const Video = (
 	);
 };
 
-export const component = (oldProps: Props = defaultProps) => {
-	const [props, setProps] = useState(oldProps);
+export const component = () => {
 	const [tab, setTab] = useState('image'),
 		[dialogOpen, setDialogOpen] = useState(false),
 		[toDownload, setToDownload] = useState(false),
 		[toRecord, setToRecord] = useState(false);
+
+	const [props, setProps] = useState(tab === 'image' ? defaultProps : defaultDynamicProps);
 
 	return (
 		<Dialog
@@ -347,21 +435,21 @@ export const component = (oldProps: Props = defaultProps) => {
 				if (!open) setToDownload(false);
 			}}>
 			<DialogTrigger key={'dialog-trigger'}>
-				<Image download={false} {...oldProps} />
+				<Image download={false} {...props} />
 			</DialogTrigger>
 			<DialogContent
 				key={'dialog-content'}
-				className="flex flex-row items-center gap-p p-p border border-zinc-600/50 !max-w-none w-fit shadow-[0_0_7px_-1px_#b0e9ff4a]">
+				className="flex flex-row items-center gap-p p-p border border-zinc-600/50 !max-w-none w-max shadow-[0_0_7px_-1px_#b0e9ff4a]">
 				<Tabs
 					onValueChange={tabValue => setTab(tabValue)}
 					defaultValue={tab}
-					className="flex flex-col w-full items-center justify-start">
+					className="shrink flex flex-col w-full items-center justify-start">
 					<TabsList className="mx-auto">
 						<TabsTrigger value="image">Image</TabsTrigger>
 						<TabsTrigger value="video">Video</TabsTrigger>
 					</TabsList>
 					<TabsContent value="image">
-						<div className="grid grid-cols-12 auto-rows-fr gap-p w-full">
+						<div className="grid grid-cols-[repeat(12,1rem)] auto-rows-fr gap-p w-full">
 							{Object.entries(params).map(
 								(
 									[
@@ -431,8 +519,8 @@ export const component = (oldProps: Props = defaultProps) => {
 						</div>
 					</TabsContent>
 					<TabsContent value="video">
-						<div className="grid grid-cols-12 auto-rows-fr gap-p w-full">
-							{Object.entries(params).map(
+						<div className="grid grid-cols-[repeat(16,1rem)] auto-rows-fr gap-p w-full">
+							{Object.entries(dynamicParams).map(
 								(
 									[
 										key,
@@ -443,6 +531,7 @@ export const component = (oldProps: Props = defaultProps) => {
 												className,
 												...paramsProps
 											},
+											inputProps = {},
 										},
 									],
 									index
@@ -474,7 +563,7 @@ export const component = (oldProps: Props = defaultProps) => {
 													[key]:
 														typeof defaultValue ===
 														'number'
-															? parseInt(
+															? parseFloat(
 																	e
 																		.target
 																		.value
@@ -486,6 +575,7 @@ export const component = (oldProps: Props = defaultProps) => {
 											defaultValue={
 												props[label] ?? defaultValue
 											}
+											{...inputProps}
 										/>
 									</span>
 								)
@@ -512,7 +602,7 @@ export const component = (oldProps: Props = defaultProps) => {
 					orientation="vertical"
 					className="![background-color:transparent] bg-radial-[at_center] from-white to-transparent !h-[-webkit-fill-available]"
 				/>
-				<div className="contents">
+				<div className="contents shrink-0">
 					{tab === 'image' ? (
 						<Image
 							download={toDownload}
@@ -521,8 +611,12 @@ export const component = (oldProps: Props = defaultProps) => {
 						/>
 					) : (
 						<Video
-							key={toRecord ? 'video-recording' : 'video-stopped'}
-							recording={toRecord}
+							// @ts-ignore
+							key={
+								(toRecord ? `video-recording` : 'video-stopped') +
+								JSON.stringify(props, null, 2)
+							}
+							record={toRecord}
 							{...props}
 						/>
 					)}
@@ -538,3 +632,4 @@ export default {
 };
 
 export type Props = Partial<ParamsToProps<typeof params>>;
+export type DynamicProps = Props & Partial<ParamsToProps<typeof dynamicParams>>;
