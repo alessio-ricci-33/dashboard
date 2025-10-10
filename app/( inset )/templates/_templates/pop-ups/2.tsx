@@ -13,6 +13,7 @@ import { cn } from '@/utils/shadcn';
 import { useFrameCapture } from '@/hooks/use-frame-capture';
 
 import { useSpring as $, animated } from '@react-spring/konva';
+import { useGlobalContext } from '@/hooks/global-context';
 
 export const params = {
 	brandName: {
@@ -478,7 +479,7 @@ export const component = () => {
 	const [tab, setTab] = useState('image'),
 		[dialogOpen, setDialogOpen] = useState(false),
 		[toDownload, setToDownload] = useState(false),
-		[toRecord, setToRecord] = useState(false);
+		{ isRecording, setIsRecording } = useGlobalContext();
 
 	const [props, setProps] = useState(tab === 'image' ? defaultProps : defaultDynamicProps);
 
@@ -641,14 +642,14 @@ export const component = () => {
 								className="relative cursor-pointer col-span-4 h-9 mt-auto self-end"
 								variant="outline"
 								size="sm"
-								onClick={() => setToRecord(prev => !prev)}>
-								{toRecord && (
+								onClick={() => setIsRecording(prev => !prev)}>
+								{isRecording && (
 									<>
 										<span className="z-20 absolute top-0 right-0 translate-x-1 -translate-y-1 bg-red-500/75 rounded-full size-3 scale-65" />
 										<span className="z-30 absolute top-0 right-0 translate-x-1 -translate-y-1 bg-red-500/85 rounded-full size-3 animate-pulse duration-800 [animation-timing-function:cubic-bezier(0.4,0,.2,.4,1)]" />
 									</>
 								)}
-								{`${toRecord ? 'Stop' : 'Record'}`}
+								{`${isRecording ? 'Stop' : 'Record'}`}
 							</Button>
 						</div>
 					</TabsContent>
@@ -668,13 +669,13 @@ export const component = () => {
 					) : (
 						<Video
 							// @ts-ignore
-							key={`video-${toRecord}-${JSON.stringify(
+							key={`video-${isRecording}-${JSON.stringify(
 								props,
 								null,
 								2
 							)}`}
-							record={toRecord}
-							onStopRecording={() => setToRecord(false)}
+							record={isRecording}
+							onStopRecording={() => setIsRecording(false)}
 							{...props}
 						/>
 					)}

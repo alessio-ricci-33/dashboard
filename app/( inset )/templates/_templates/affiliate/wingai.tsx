@@ -16,30 +16,39 @@ import { Separator } from '@/ui/separator';
 import { Input } from '@/ui/input';
 import { Button } from '@/ui/button';
 import { cn } from '@/utils/shadcn';
+import { useGlobalContext } from '@/hooks/global-context';
 
 export const params = {
+	margin: {
+		type: Number,
+		label: 'Margin',
+		default: 20,
+		props: {
+			className: 'col-span-3',
+		},
+	},
 	padding: {
 		type: Number,
 		label: 'Padding',
 		default: 20,
 		props: {
-			className: 'col-span-4',
+			className: 'col-span-3',
 		},
 	},
 	height: {
 		type: Number,
-		label: 'Altezza',
+		label: 'Height',
 		default: 520,
 		props: {
-			className: 'col-span-4',
+			className: 'col-span-3',
 		},
 	},
 	width: {
 		type: Number,
-		label: 'Larghezza',
+		label: 'Width',
 		default: 290,
 		props: {
-			className: 'col-span-4',
+			className: 'col-span-3',
 		},
 	},
 	answer: {
@@ -48,6 +57,14 @@ export const params = {
 		default: 'Ho sempre pensato che saremmo stati destinati a stare insieme ❤',
 		props: {
 			className: 'col-span-full w-full',
+		},
+	},
+	chatSnapshot: {
+		type: 'image',
+		label: 'Chat snapshot',
+		default: null,
+		props: {
+			className: 'col-span-8 w-full',
 		},
 	},
 	placeholder: {
@@ -730,7 +747,7 @@ export const component = () => {
 	const [tab, setTab] = useState('image'),
 		[dialogOpen, setDialogOpen] = useState(false),
 		[toDownload, setToDownload] = useState(false),
-		[toRecord, setToRecord] = useState(false);
+		{ isRecording, setIsRecording } = useGlobalContext();
 
 	const [props, setProps] = useState(tab === 'image' ? defaultProps : defaultDynamicProps);
 
@@ -757,7 +774,7 @@ export const component = () => {
 						<TabsTrigger value="video">Video</TabsTrigger>
 					</TabsList>
 					<TabsContent value="image">
-						<div className="grid grid-cols-[repeat(12,1.17rem)] auto-rows-fr justify-items-start gap-p w-full h-fit self-start mb-auto">
+						<div className="grid grid-cols-[repeat(12,1.5rem)] auto-rows-fr justify-items-start gap-p w-full h-fit self-start mb-auto">
 							{Object.entries(params).map(
 								(
 									[
@@ -826,18 +843,110 @@ export const component = () => {
 							</Button>
 						</div>
 					</TabsContent>
-					<TabsContent value="video"></TabsContent>
+					<TabsContent value="video">
+						<div className="grid grid-cols-[repeat(12,1.5rem)] auto-rows-fr gap-p w-full">
+							{Object.entries(dynamicParams).map(
+								(
+									[
+										key,
+										{
+											label,
+											default: defaultValue,
+											props: {
+												className,
+												...paramsProps
+											},
+											inputProps = {},
+										},
+									],
+									index
+								) => (
+									<span
+										key={index + key}
+										className={cn(
+											'flex flex-col justify-between gap-1 text-sm',
+											className
+										)}
+										{...paramsProps}>
+										{label}
+
+										<Input
+											type={
+												typeof defaultValue ===
+												'number'
+													? 'number'
+													: 'text'
+											}
+											className="w-full self-end justify-self-end mt-auto"
+											onChange={e => {
+												if (
+													!e.target.value?.trim()
+														.length
+												)
+													return;
+												setProps({
+													...props,
+													[key]:
+														typeof defaultValue ===
+														'number'
+															? parseFloat(
+																	e
+																		.target
+																		.value
+															  )
+															: e.target
+																	.value,
+												});
+											}}
+											defaultValue={
+												props[label] ?? defaultValue
+											}
+											{...inputProps}
+										/>
+									</span>
+								)
+							)}
+
+							<Button
+								className="relative cursor-pointer col-span-4 h-9 mt-auto self-end"
+								variant="outline"
+								size="sm"
+								onClick={() => setIsRecording(prev => !prev)}>
+								{isRecording && (
+									<>
+										<span className="z-20 absolute top-0 right-0 translate-x-1 -translate-y-1 bg-red-500/75 rounded-full size-3 scale-65" />
+										<span className="z-30 absolute top-0 right-0 translate-x-1 -translate-y-1 bg-red-500/85 rounded-full size-3 animate-pulse duration-800 [animation-timing-function:cubic-bezier(0.4,0,.2,.4,1)]" />
+									</>
+								)}
+								{`${isRecording ? 'Stop' : 'Record'}`}
+							</Button>
+						</div>
+					</TabsContent>
 				</Tabs>
 				<Separator
 					orientation="vertical"
 					className="![background-color:transparent] bg-radial-[at_center] from-white to-80% to-transparent !h-[-webkit-fill-available]"
 				/>
 				<div className="contents">
-					<Image
-						download={toDownload}
-						onDownload={() => setToDownload(false)}
-						{...props}
-					/>
+					{tab === 'image' ? (
+						<Image
+							download={toDownload}
+							onDownload={() => setToDownload(false)}
+							{...props}
+						/>
+					) : (
+						<Video
+							// @ts-ignore
+							key={`video-${toRecord}-${JSON.stringify(
+								props,
+								null,
+								2
+							)}`}
+							record={isRecording}
+							onStopRecording={() => setIsRecording(false)}
+							{...props}
+						/>
+					)}
 				</div>
 			</DialogContent>
 		</Dialog>
