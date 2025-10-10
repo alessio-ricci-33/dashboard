@@ -1,7 +1,7 @@
 import { TbMenu2 } from 'react-icons/tb';
 import { IoDocuments } from 'react-icons/io5';
 import { GoPencil } from 'react-icons/go';
-import { Layer, Rect, Text, Circle, Group } from 'react-konva';
+import { Layer, Rect, Text, Circle, Group, Stage } from 'react-konva';
 import { BiSearchAlt } from 'react-icons/bi';
 
 import { HiArrowLeft } from 'react-icons/hi2';
@@ -11,12 +11,16 @@ import { LocalImage, SvgIconImage } from '@/utils/local-image';
 
 import { Dialog, DialogContent, DialogTrigger } from '@/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/ui/tabs';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Separator } from '@/ui/separator';
 import { Input } from '@/ui/input';
 import { Button } from '@/ui/button';
 import { cn } from '@/utils/shadcn';
 import { useGlobalContext } from '@/hooks/global-context';
+import { ImageLoader } from '@/components/imageLoader';
+import { useSpring as $, animated } from '@react-spring/konva';
+import { AnimatedAnswerGroup, AnimatedLocalImage } from '@/components/animated';
+import { useFrameCapture } from '@/hooks/use-frame-capture';
 
 export const params = {
 	margin: {
@@ -58,13 +62,16 @@ export const params = {
 		props: {
 			className: 'col-span-full w-full',
 		},
+		inputProps: {
+			className: 'text-start',
+		},
 	},
 	chatSnapshot: {
 		type: 'image',
 		label: 'Chat snapshot',
 		default: null,
 		props: {
-			className: 'col-span-8 w-full',
+			className: 'col-span-8 row-span-3 w-full',
 		},
 	},
 	placeholder: {
@@ -74,91 +81,14 @@ export const params = {
 		props: {
 			className: 'col-span-8 w-full',
 		},
+		inputProps: {
+			className: 'text-start',
+		},
 	},
 };
 
 export const dynamicParams = {
 	...params,
-	offsetY: {
-		type: Number,
-		label: 'Y Offsets',
-		default: 80,
-		props: {
-			className: 'col-span-4',
-		},
-		inputProps: {
-			step: 2.5,
-		},
-	},
-
-	startDelay: {
-		type: Number,
-		label: 'Delays',
-		default: 0.8,
-		props: {
-			className: 'col-span-2',
-		},
-		inputProps: {
-			step: 0.1,
-		},
-	},
-	freeze: {
-		type: Number,
-		label: '',
-		default: 1.5,
-		props: {
-			className: 'col-span-2',
-		},
-		inputProps: {
-			step: 0.1,
-		},
-	},
-
-	fadeIn: {
-		type: Number,
-		label: 'Fade in',
-		default: 0.7,
-		props: {
-			className: 'col-span-4',
-		},
-		inputProps: {
-			step: 0.1,
-		},
-	},
-
-	fadeOut: {
-		type: Number,
-		label: 'Fade out',
-		default: 0.3,
-		props: {
-			className: 'col-span-4',
-		},
-		inputProps: {
-			step: 0.1,
-		},
-	},
-	opacityFrom: {
-		type: Number,
-		label: 'Opacity',
-		default: 0,
-		props: {
-			className: 'col-span-2',
-		},
-		inputProps: {
-			step: 0.05,
-		},
-	},
-	opacityTo: {
-		type: Number,
-		label: '',
-		default: 1,
-		props: {
-			className: 'col-span-2',
-		},
-		inputProps: {
-			step: 0.05,
-		},
-	},
 } as const;
 
 export const defaultProps: Props = Object.entries(params).reduce(
@@ -203,7 +133,6 @@ export const Image = (
 					<Group width={width} height={height * 0.18} y={0} x={0}>
 						<SvgIconImage
 							Icon={<HiArrowLeft size={18} color="#000" />}
-							src="/templates/wingai/logo.webp"
 							width={18}
 							x={8}
 							y={38}
@@ -457,10 +386,8 @@ export const Image = (
 	);
 };
 
-export const Video = (
-	props = defaultProps as Props & { download?: boolean; onDownload?: () => void }
-) => {
-	const { height, width, padding, placeholder, answer } = Object.entries(params).reduce(
+export const Video = (props = defaultDynamicProps as DynamicProps) => {
+	const { height, width, padding, placeholder, answer } = Object.entries(dynamicParams).reduce(
 		(acc, [key, { default: defaultValue }]) => {
 			if (!props[key]) acc[key] = defaultValue;
 
@@ -469,36 +396,121 @@ export const Video = (
 		{ ...props } as Props
 	);
 
+	const stageRef = useRef<any>(null),
+		[isRecording, setIsRecording] = useState(props.record ?? false);
+
+	const [toFadeIn, setToFadeIn] = useState(false),
+		[toFadeOut, setToFadeOut] = useState(false);
+
+	useEffect(() => {
+		setTimeout(() => {
+			setToFadeIn(true);
+		}, 1000);
+	}, [props]);
+
+	useFrameCapture(stageRef, isRecording, {
+		format: 'uri',
+		targetFps: 60,
+		onComplete: async (frames, fps) => {
+			try {
+				const response = await fetch('https://server.msgi.it/render-video', {
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/json',
+					},
+					// Invia l'array di frame e gli FPS calcolati
+					body: JSON.stringify({
+						frames,
+						fps,
+					}),
+				});
+
+				if (!response.ok) {
+					throw new Error(`Errore HTTP: ${response.status}`);
+				}
+
+				const blob = await response.blob();
+				const url = window.URL.createObjectURL(blob);
+				const a = document.createElement('a');
+				a.href = url;
+				a.download = 'wingai-template.mov';
+				document.body.appendChild(a);
+				a.click();
+				a.remove();
+				window.URL.revokeObjectURL(url);
+
+				console.log('Video scaricato con successo!');
+			} catch (error) {
+				console.error(
+					"Errore durante l'invio dei frame o il download del video:",
+					error
+				);
+				alert(
+					'Si è verificato un errore durante la creazione del video. Controlla la console.'
+				);
+			} finally {
+				console.log('Upload completato');
+				if (props.onStopRecording) props.onStopRecording();
+			}
+		},
+	});
+
 	return (
-		<DownloadableCanvas
-			filename="wingai-mockup"
-			download={props.download}
-			onDownload={props.onDownload}
+		<Stage
+			ref={stageRef}
+			style={{ backgroundColor: 'transparent' }}
+			options={{ preserveDrawingBuffer: true }}
 			height={height + padding * 2}
 			width={width + padding * 2}>
-			<Layer>
+			{/* @ts-ignore */}
+			<animated.Layer
+				key={JSON.stringify(props)}
+				{...$({
+					from: { opacity: 0, y: 0 },
+					to: {
+						opacity: toFadeIn ? 1 : 0,
+					},
+					config: {
+						tension: isRecording ? 280 : 170,
+						friction: isRecording ? 22 : 26,
+						precision: 0.00001,
+						duration: toFadeIn ? 500 : 250,
+					},
+
+					onRest: async () => {
+						if (toFadeIn) {
+							await new Promise(r => setTimeout(r, 3000));
+							setToFadeIn(false);
+						}
+
+						if (!toFadeIn) {
+							await new Promise(r => setTimeout(r, 500));
+
+							setIsRecording(false);
+							console.log('STOP RECORDING');
+						}
+					},
+				})}>
 				<Group x={padding} y={padding}>
 					<Rect
 						width={width}
 						height={height}
 						fill="white"
 						cornerRadius={12}
-						shadowBlur={12}
+						shadowBlur={35}
 						shadowColor="#000000"
 					/>
-					<Group width={width} height={height * 0.18} y={0} x={0}>
+					<Group width={width} height={height * 0.18} y={17} x={0}>
 						<SvgIconImage
 							Icon={<HiArrowLeft size={18} color="#000" />}
-							src="/templates/wingai/logo.webp"
 							width={18}
 							x={8}
-							y={38}
+							y={8}
 						/>
 						<LocalImage
 							src="/templates/wingai/logo.webp"
 							width={105}
 							x={width / 2 - 52.5}
-							y={30}
 							shadowBlur={5}
 							shadowColor="#000000"
 							shadowOpacity={0.3}
@@ -508,7 +520,7 @@ export const Video = (
 							Icon={<TbMenu2 size={24} color="#f27365" />}
 							width={24}
 							x={width - 33}
-							y={37.5}
+							y={7.5}
 						/>
 					</Group>
 
@@ -595,6 +607,33 @@ export const Video = (
 									y={14}
 								/>
 							</Group>
+
+							<Group x={20} y={height * 0.07}>
+								<Rect
+									x={0}
+									y={0}
+									width={width - 40}
+									height={height * 0.31}
+									fill={'#000000'}
+									cornerRadius={12}
+									shadowBlur={12}
+									shadowColor="#000000"
+									shadowOpacity={0.66}
+								/>
+								{/* Current chat */}
+								{props.chatSnapshot && (
+									<AnimatedLocalImage
+										y={height * 0.025}
+										src={URL.createObjectURL(
+											props.chatSnapshot
+										)}
+										width={width - 50}
+										x={5}
+										cornerRadius={12}
+										trigger={toFadeIn}
+									/>
+								)}
+							</Group>
 						</Group>
 
 						<Group y={height * 0.6} height={height * 0.22}>
@@ -618,6 +657,7 @@ export const Video = (
 								shadowOffsetY={8}
 								shadowColor="#000000"
 							/>
+
 							<Group width={width - 20} x={10} y={-10}>
 								<LocalImage
 									y={-4}
@@ -627,7 +667,7 @@ export const Video = (
 								/>
 								<Text
 									align="center"
-									width={width - 20}
+									width={width - padding}
 									fontFamily="secondary"
 									fontSize={16}
 									fill="#ffa46b"
@@ -639,7 +679,14 @@ export const Video = (
 									src="/templates/wingai/points_up.png"
 									width={12}
 								/>
-								<Group y={height * 0.22 - 70}>
+
+								{/* Answer */}
+								<AnimatedAnswerGroup
+									x={0}
+									y={height * 0.22 - 70}
+									width={width - padding * 2}
+									height={120}
+									trigger={toFadeIn}>
 									<Rect
 										width={width - 20}
 										height={70}
@@ -665,10 +712,10 @@ export const Video = (
 									/>
 									<Text
 										x={10}
-										y={10}
+										y={11}
 										align="left"
 										verticalAlign="center"
-										width={width - 20}
+										width={width - padding * 2}
 										fontFamily="secondary"
 										fontSize={16}
 										fill="#000000"
@@ -724,7 +771,7 @@ export const Video = (
 											y={2}
 										/>
 									</Group>
-								</Group>
+								</AnimatedAnswerGroup>
 							</Group>
 						</Group>
 					</Group>
@@ -738,8 +785,8 @@ export const Video = (
 						shadowOpacity={0.15}
 					/>
 				</Group>
-			</Layer>
-		</DownloadableCanvas>
+			</animated.Layer>
+		</Stage>
 	);
 };
 
@@ -780,12 +827,14 @@ export const component = () => {
 									[
 										key,
 										{
+											type,
 											label,
 											default: defaultValue,
 											props: {
 												className,
 												...paramsProps
 											},
+											inputProps = {},
 										},
 									],
 									index
@@ -798,38 +847,53 @@ export const component = () => {
 										)}
 										{...paramsProps}>
 										{label}
-										<Input
-											type={
-												typeof defaultValue ===
-												'number'
-													? 'number'
-													: 'text'
-											}
-											className="w-full"
-											onChange={e => {
-												if (
-													!e.target.value?.trim()
-														.length
-												)
-													return;
-												setProps({
-													...props,
-													[key]:
-														typeof defaultValue ===
-														'number'
-															? parseInt(
-																	e
+
+										{type === 'image' ? (
+											<ImageLoader
+												onFileChange={file =>
+													setProps({
+														...props,
+														[key]: file,
+													})
+												}
+												{...inputProps}
+											/>
+										) : (
+											<Input
+												type={
+													typeof defaultValue ===
+													'number'
+														? 'number'
+														: 'text'
+												}
+												className="w-full"
+												onChange={e => {
+													if (
+														!e.target.value?.trim()
+															.length
+													)
+														return;
+													setProps({
+														...props,
+														[key]:
+															typeof defaultValue ===
+															'number'
+																? parseInt(
+																		e
+																			.target
+																			.value
+																  )
+																: e
 																		.target
-																		.value
-															  )
-															: e.target
-																	.value,
-												});
-											}}
-											defaultValue={
-												props[key] ?? defaultValue
-											}
-										/>
+																		.value,
+													});
+												}}
+												defaultValue={
+													props[key] ??
+													defaultValue
+												}
+											/>
+										)}
 									</span>
 								)
 							)}
@@ -850,6 +914,7 @@ export const component = () => {
 									[
 										key,
 										{
+											type,
 											label,
 											default: defaultValue,
 											props: {
@@ -864,45 +929,59 @@ export const component = () => {
 									<span
 										key={index + key}
 										className={cn(
-											'flex flex-col justify-between gap-1 text-sm',
+											'flex flex-col gap-1 text-sm',
 											className
 										)}
 										{...paramsProps}>
 										{label}
 
-										<Input
-											type={
-												typeof defaultValue ===
-												'number'
-													? 'number'
-													: 'text'
-											}
-											className="w-full self-end justify-self-end mt-auto"
-											onChange={e => {
-												if (
-													!e.target.value?.trim()
-														.length
-												)
-													return;
-												setProps({
-													...props,
-													[key]:
-														typeof defaultValue ===
-														'number'
-															? parseFloat(
-																	e
+										{type === 'image' ? (
+											<ImageLoader
+												onFileChange={file =>
+													setProps({
+														...props,
+														[key]: file,
+													})
+												}
+												{...inputProps}
+											/>
+										) : (
+											<Input
+												type={
+													typeof defaultValue ===
+													'number'
+														? 'number'
+														: 'text'
+												}
+												className="w-full self-end justify-self-end mt-auto"
+												onChange={e => {
+													if (
+														!e.target.value?.trim()
+															.length
+													)
+														return;
+													setProps({
+														...props,
+														[key]:
+															typeof defaultValue ===
+															'number'
+																? parseFloat(
+																		e
+																			.target
+																			.value
+																  )
+																: e
 																		.target
-																		.value
-															  )
-															: e.target
-																	.value,
-												});
-											}}
-											defaultValue={
-												props[label] ?? defaultValue
-											}
-											{...inputProps}
-										/>
+																		.value,
+													});
+												}}
+												defaultValue={
+													props[label] ??
+													defaultValue
+												}
+												{...inputProps}
+											/>
+										)}
 									</span>
 								)
 							)}
@@ -937,7 +1016,7 @@ export const component = () => {
 					) : (
 						<Video
 							// @ts-ignore
-							key={`video-${toRecord}-${JSON.stringify(
+							key={`video-${isRecording}-${JSON.stringify(
 								props,
 								null,
 								2
@@ -958,5 +1037,12 @@ export default {
 	params,
 };
 
-export type Props = Partial<ParamsToProps<typeof params>>;
-export type DynamicProps = Props & Partial<ParamsToProps<typeof dynamicParams>>;
+export type Props = Partial<ParamsToProps<typeof params>> & {
+	download?: boolean;
+	onDownload?: () => void;
+};
+export type DynamicProps = Props &
+	Partial<ParamsToProps<typeof dynamicParams>> & {
+		record?: boolean;
+		onStopRecording?: () => void;
+	};
