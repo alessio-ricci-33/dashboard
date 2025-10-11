@@ -16,6 +16,7 @@ import { cn } from "@/utils/shadcn";
 
 import { useSpring as $, animated } from "@react-spring/konva";
 import { useFrameCapture } from "@/hooks/use-frame-capture";
+import { ParamsToProps } from "@/types/utils";
 
 export const params = {
 	brandName: {
@@ -691,7 +692,7 @@ export const component = () => {
 				</Tabs>
 				<Separator
 					orientation="vertical"
-					className="![background-color:transparent] bg-radial-[at_center] from-white to-transparent !h-[-webkit-fill-available]"
+					className="![background-color:transparent] bg-radial-[at_center] from-white to-87% to-transparent !h-[-webkit-fill-available]"
 				/>
 				<div className="contents">
 					{tab === "image" ? (

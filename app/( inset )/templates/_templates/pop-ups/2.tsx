@@ -638,7 +638,7 @@ export const component = () => {
 
 				<Separator
 					orientation="vertical"
-					className="![background-color:transparent] bg-radial-[at_center] from-white to-90% to-transparent !h-[-webkit-fill-available]"
+					className="![background-color:transparent] bg-radial-[at_center] from-white to-87% to-transparent !h-[-webkit-fill-available]"
 				/>
 				<div className="contents shrink-0">
 					{tab === "image" ? (
