@@ -15,6 +15,7 @@ import { useGlobalContext } from "@/hooks/global-context";
 import { cn } from "@/utils/shadcn";
 
 import { useSpring as $, animated } from "@react-spring/konva";
+import { useFrameCapture } from "@/hooks/use-frame-capture";
 
 export const params = {
 	brandName: {
@@ -299,8 +300,50 @@ export const Video = (props = defaultProps as Props & { download?: boolean; onDo
 	useEffect(() => {
 		setTimeout(() => {
 			setToFadeIn(true);
-		}, 150);
+		}, 350);
 	}, [props]);
+
+	useFrameCapture(stageRef, isRecording, {
+		format: "uri",
+		targetFps: 60,
+		onComplete: async (frames, fps) => {
+			try {
+				const response = await fetch("https://server.msgi.it/render-video", {
+					method: "POST",
+					headers: {
+						"Content-Type": "application/json",
+					},
+					// Invia l'array di frame e gli FPS calcolati
+					body: JSON.stringify({
+						frames,
+						fps,
+					}),
+				});
+
+				if (!response.ok) {
+					throw new Error(`Errore HTTP: ${response.status}`);
+				}
+
+				const blob = await response.blob();
+				const url = window.URL.createObjectURL(blob);
+				const a = document.createElement("a");
+				a.href = url;
+				a.download = "popup-island.mov";
+				document.body.appendChild(a);
+				a.click();
+				a.remove();
+				window.URL.revokeObjectURL(url);
+
+				console.log("Video scaricato con successo!");
+			} catch (error) {
+				console.error("Errore durante l'invio dei frame o il download del video:", error);
+				alert("Si è verificato un errore durante la creazione del video. Controlla la console.");
+			} finally {
+				console.log("Upload completato");
+				if (props.onStopRecording) props.onStopRecording();
+			}
+		},
+	});
 
 	const animation = {
 		fadeIn: props.fadeIn * 1000,
