@@ -1,104 +1,104 @@
-import { TbMenu2 } from 'react-icons/tb';
-import { IoDocuments } from 'react-icons/io5';
-import { GoPencil } from 'react-icons/go';
-import { Layer, Rect, Text, Circle, Group, Stage } from 'react-konva';
-import { BiSearchAlt } from 'react-icons/bi';
+import { TbMenu2 } from "react-icons/tb";
+import { IoDocuments } from "react-icons/io5";
+import { GoPencil } from "react-icons/go";
+import { Layer, Rect, Text, Circle, Group, Stage } from "react-konva";
+import { BiSearchAlt } from "react-icons/bi";
 
-import { HiArrowLeft } from 'react-icons/hi2';
-import { ParamsToProps } from '@/types/utils';
-import DownloadableCanvas from '@/components/downloadable-canvas';
-import { LocalImage, SvgIconImage } from '@/utils/local-image';
+import { HiArrowLeft } from "react-icons/hi2";
+import { ParamsToProps } from "@/types/utils";
+import DownloadableCanvas from "@/components/downloadable-canvas";
+import { LocalImage, SvgIconImage } from "@/utils/local-image";
 
-import { Dialog, DialogContent, DialogTrigger } from '@/ui/dialog';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/ui/tabs';
-import { useEffect, useRef, useState } from 'react';
-import { Separator } from '@/ui/separator';
-import { Input } from '@/ui/input';
-import { Button } from '@/ui/button';
-import { cn } from '@/utils/shadcn';
-import { useGlobalContext } from '@/hooks/global-context';
-import { ImageLoader } from '@/components/imageLoader';
-import { useSpring as $, animated } from '@react-spring/konva';
-import { AnimatedAnswerGroup, AnimatedLocalImage } from '@/components/animated';
-import { useFrameCapture } from '@/hooks/use-frame-capture';
+import { Dialog, DialogContent, DialogTrigger } from "@/ui/dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/ui/tabs";
+import { useEffect, useRef, useState } from "react";
+import { Separator } from "@/ui/separator";
+import { Input } from "@/ui/input";
+import { Button } from "@/ui/button";
+import { cn } from "@/utils/shadcn";
+import { useGlobalContext } from "@/hooks/global-context";
+import { ImageLoader } from "@/components/imageLoader";
+import { useSpring as $, animated } from "@react-spring/konva";
+import { AnimatedAnswerGroup, AnimatedLocalImage } from "@/components/animated";
+import { useFrameCapture } from "@/hooks/use-frame-capture";
 
 export const params = {
 	margin: {
 		type: Number,
-		label: 'Margin',
+		label: "Margin",
 		default: 20,
 		props: {
-			className: 'col-span-3',
+			className: "col-span-3",
 		},
 	},
 	padding: {
 		type: Number,
-		label: 'Padding',
+		label: "Padding",
 		default: 20,
 		props: {
-			className: 'col-span-3',
+			className: "col-span-3",
 		},
 	},
 	height: {
 		type: Number,
-		label: 'Height',
-		default: 520,
+		label: "Height",
+		default: 500,
 		props: {
-			className: 'col-span-3',
+			className: "col-span-3",
 		},
 	},
 	width: {
 		type: Number,
-		label: 'Width',
-		default: 290,
+		label: "Width",
+		default: 300,
 		props: {
-			className: 'col-span-3',
+			className: "col-span-3",
 		},
 	},
 	answer: {
 		type: String,
-		label: 'Answer',
-		default: 'Ho sempre pensato che saremmo stati destinati a stare insieme ❤',
+		label: "Answer",
+		default: "Ho sempre pensato che saremmo stati destinati a stare insieme ❤",
 		props: {
-			className: 'col-span-full w-full',
+			className: "col-span-full w-full",
 		},
 		inputProps: {
-			className: 'text-start',
+			className: "text-start",
 		},
 	},
 
 	placeholder: {
 		type: String,
-		label: 'Search bar',
-		default: 'Scrivi i tuoi interessi ...',
+		label: "Search bar",
+		default: "Scrivi i tuoi interessi ...",
 		props: {
-			className: 'col-span-6 w-full',
+			className: "col-span-6 w-full",
 		},
 		inputProps: {
-			className: 'text-start',
+			className: "text-start",
 		},
 	},
 
 	slogan: {
 		type: String,
-		label: 'Slogan',
-		default: 'Fatti capire meglio!',
+		label: "Slogan",
+		default: "Fatti capire meglio!",
 		props: {
-			className: 'col-span-6 w-full',
+			className: "col-span-6 w-full",
 		},
 		inputProps: {
-			className: 'text-start',
+			className: "text-start",
 		},
 	},
 	chatSnapshot: {
-		type: 'image',
-		label: 'Chat snapshot',
+		type: "image",
+		label: "Chat snapshot",
 		default: null,
 		props: {
-			className: 'col-span-8 row-span-3 w-full',
+			className: "col-span-8 row-span-3 w-full",
 		},
 		inputProps: {
-			className: 'size-full text-start self-start m-none',
+			className: "size-full text-start self-start m-none",
 		},
 	},
 };
@@ -107,10 +107,10 @@ export const dynamicParams = {
 	...params,
 	fadeIn: {
 		type: Number,
-		label: 'Fad in',
+		label: "Fad in",
 		default: 0.4,
 		props: {
-			className: 'col-span-4 -col-end-1',
+			className: "col-span-4 -col-end-1",
 		},
 		inputProps: {
 			step: 0.1,
@@ -118,10 +118,10 @@ export const dynamicParams = {
 	},
 	freeze: {
 		type: Number,
-		label: 'Freeze',
+		label: "Freeze",
 		default: 3.5,
 		props: {
-			className: 'col-span-4 -col-end-1',
+			className: "col-span-4 -col-end-1",
 		},
 		inputProps: {
 			step: 0.1,
@@ -129,10 +129,10 @@ export const dynamicParams = {
 	},
 	fadeOut: {
 		type: Number,
-		label: 'Fad out',
+		label: "Fad out",
 		default: 0.175,
 		props: {
-			className: 'col-span-4 -col-end-1',
+			className: "col-span-4 -col-end-1",
 		},
 		inputProps: {
 			step: 0.1,
@@ -150,9 +150,7 @@ export const defaultDynamicProps: DynamicProps = Object.entries(dynamicParams).r
 	{}
 );
 
-export const Image = (
-	props = defaultProps as Props & { download?: boolean; onDownload?: () => void }
-) => {
+export const Image = (props = defaultProps as Props & { download?: boolean; onDownload?: () => void }) => {
 	const { height, width, padding, placeholder, answer, slogan } = Object.entries(params).reduce(
 		(acc, [key, { default: defaultValue }]) => {
 			if (!props[key]) acc[key] = defaultValue;
@@ -168,7 +166,8 @@ export const Image = (
 			download={props.download}
 			onDownload={props.onDownload}
 			height={height + padding * 2}
-			width={width + padding * 2}>
+			width={width + padding * 2}
+		>
 			<Layer>
 				<Group x={padding} y={padding}>
 					<Rect
@@ -206,19 +205,21 @@ export const Image = (
 
 					<Group
 						y={height * 0.18}
-						clipFunc={ctx => {
+						clipFunc={(ctx) => {
 							ctx.beginPath();
 							ctx.roundRect(0, 0, width, height * 0.82, 12);
 							ctx.closePath();
-						}}>
+						}}
+					>
 						<Group
 							y={0}
 							height={height * 0.6}
-							clipFunc={ctx => {
+							clipFunc={(ctx) => {
 								ctx.beginPath();
 								ctx.roundRect(0, 0, width, height * 0.6, 0);
 								ctx.closePath();
-							}}>
+							}}
+						>
 							<Circle
 								width={height * 4}
 								height={height * 4}
@@ -229,12 +230,7 @@ export const Image = (
 								fillRadialGradientEndRadius={height}
 								fillRadialGradientStartPoint={{ x: 0, y: 0 }}
 								fillRadialGradientEndPoint={{ x: 0, y: 0 }}
-								fillRadialGradientColorStops={[
-									0,
-									'#ffba9f',
-									0.23,
-									'#f6acc1',
-								]}
+								fillRadialGradientColorStops={[0, "#ffba9f", 0.23, "#f6acc1"]}
 							/>
 							<Circle
 								width={height * 4}
@@ -248,9 +244,9 @@ export const Image = (
 								fillRadialGradientEndPoint={{ x: 0, y: 0 }}
 								fillRadialGradientColorStops={[
 									0,
-									'rgba(0,0,0,0.07)',
+									"rgba(0,0,0,0.07)",
 									0.007,
-									'transparent',
+									"transparent",
 								]}
 							/>
 							{/* Search bar */}
@@ -267,12 +263,7 @@ export const Image = (
 								/>
 
 								<SvgIconImage
-									Icon={
-										<BiSearchAlt
-											size={20}
-											color="#ff6a6a"
-										/>
-									}
+									Icon={<BiSearchAlt size={20} color="#ff6a6a" />}
 									src="/templates/wingai/search_bar.png"
 									height={20}
 									x={13}
@@ -280,7 +271,7 @@ export const Image = (
 								/>
 								<Text
 									text={placeholder}
-									fill={'#71717b'}
+									fill={"#71717b"}
 									fontFamily="secondary"
 									fontSize={14}
 									x={40}
@@ -300,12 +291,7 @@ export const Image = (
 								fillRadialGradientStartRadius={height * 3}
 								fillRadialGradientStartPoint={{ x: 0, y: 0 }}
 								fillRadialGradientEndPoint={{ x: 0, y: 0 }}
-								fillRadialGradientColorStops={[
-									0,
-									'#ffffff',
-									0.5,
-									'#ffffff',
-								]}
+								fillRadialGradientColorStops={[0, "#ffffff", 0.5, "#ffffff"]}
 								shadowBlur={21}
 								shadowOffsetY={8}
 								shadowColor="#000000"
@@ -315,10 +301,7 @@ export const Image = (
 									<LocalImage
 										y={-4}
 										x={Math.max(
-											(width -
-												20 -
-												slogan.length * 10) /
-												2 -
+											(width - 20 - slogan.length * 10) / 2 -
 												10,
 											0
 										)}
@@ -369,9 +352,9 @@ export const Image = (
 										}}
 										fillLinearGradientColorStops={[
 											0,
-											'#fcebe6',
+											"#fcebe6",
 											1,
-											'#f9e6ea',
+											"#f9e6ea",
 										]}
 									/>
 									<Text
@@ -386,10 +369,7 @@ export const Image = (
 										text={answer}
 										lineHeight={1.1}
 									/>
-									<Group
-										width={46 + 5}
-										x={width - 46 - 20}
-										y={-10}>
+									<Group width={46 + 5} x={width - 46 - 20} y={-10}>
 										<Rect
 											x={-20}
 											y={-3}
@@ -455,9 +435,7 @@ export const Image = (
 };
 
 export const Video = (props = defaultDynamicProps as DynamicProps) => {
-	const { height, width, padding, placeholder, answer, slogan } = Object.entries(
-		dynamicParams
-	).reduce(
+	const { height, width, padding, placeholder, answer, slogan } = Object.entries(dynamicParams).reduce(
 		(acc, [key, { default: defaultValue }]) => {
 			if (!props[key]) acc[key] = defaultValue;
 
@@ -477,20 +455,20 @@ export const Video = (props = defaultDynamicProps as DynamicProps) => {
 		setTimeout(async () => {
 			setToFadeIn(true);
 
-			await new Promise(r => setTimeout(r, 650));
+			await new Promise((r) => setTimeout(r, 650));
 			setToShowAnswer(true);
 		}, 1000);
 	}, [props]);
 
 	useFrameCapture(stageRef, isRecording, {
-		format: 'uri',
+		format: "uri",
 		targetFps: 60,
 		onComplete: async (frames, fps) => {
 			try {
-				const response = await fetch('https://server.msgi.it/render-video', {
-					method: 'POST',
+				const response = await fetch("https://server.msgi.it/render-video", {
+					method: "POST",
 					headers: {
-						'Content-Type': 'application/json',
+						"Content-Type": "application/json",
 					},
 					// Invia l'array di frame e gli FPS calcolati
 					body: JSON.stringify({
@@ -505,25 +483,20 @@ export const Video = (props = defaultDynamicProps as DynamicProps) => {
 
 				const blob = await response.blob();
 				const url = window.URL.createObjectURL(blob);
-				const a = document.createElement('a');
+				const a = document.createElement("a");
 				a.href = url;
-				a.download = 'wingai-template.mov';
+				a.download = "wingai-template.mov";
 				document.body.appendChild(a);
 				a.click();
 				a.remove();
 				window.URL.revokeObjectURL(url);
 
-				console.log('Video scaricato con successo!');
+				console.log("Video scaricato con successo!");
 			} catch (error) {
-				console.error(
-					"Errore durante l'invio dei frame o il download del video:",
-					error
-				);
-				alert(
-					'Si è verificato un errore durante la creazione del video. Controlla la console.'
-				);
+				console.error("Errore durante l'invio dei frame o il download del video:", error);
+				alert("Si è verificato un errore durante la creazione del video. Controlla la console.");
 			} finally {
-				console.log('Upload completato');
+				console.log("Upload completato");
 				if (props.onStopRecording) props.onStopRecording();
 			}
 		},
@@ -538,10 +511,11 @@ export const Video = (props = defaultDynamicProps as DynamicProps) => {
 	return (
 		<Stage
 			ref={stageRef}
-			style={{ backgroundColor: 'transparent' }}
+			style={{ backgroundColor: "transparent" }}
 			options={{ preserveDrawingBuffer: true }}
 			height={height + padding * 2}
-			width={width + padding * 2}>
+			width={width + padding * 2}
+		>
 			{/* @ts-ignore */}
 			<animated.Layer
 				key={JSON.stringify(props)}
@@ -560,18 +534,19 @@ export const Video = (props = defaultDynamicProps as DynamicProps) => {
 
 					onRest: async () => {
 						if (toFadeIn) {
-							await new Promise(r => setTimeout(r, 3000));
+							await new Promise((r) => setTimeout(r, 3000));
 							setToFadeIn(false);
 						}
 
 						if (!toFadeIn) {
-							await new Promise(r => setTimeout(r, 500));
+							await new Promise((r) => setTimeout(r, 500));
 
 							setIsRecording(false);
-							console.log('STOP RECORDING');
+							console.log("STOP RECORDING");
 						}
 					},
-				})}>
+				})}
+			>
 				<Group x={padding} y={padding}>
 					<Rect
 						width={width}
@@ -581,11 +556,7 @@ export const Video = (props = defaultDynamicProps as DynamicProps) => {
 						shadowBlur={35}
 						shadowColor="#000000"
 					/>
-					<Group
-						width={width}
-						height={height * 0.18}
-						y={height * 0.09 - 18}
-						x={0}>
+					<Group width={width} height={height * 0.18} y={height * 0.09 - 18} x={0}>
 						<SvgIconImage
 							Icon={<HiArrowLeft size={18} color="#000" />}
 							width={18}
@@ -611,19 +582,21 @@ export const Video = (props = defaultDynamicProps as DynamicProps) => {
 
 					<Group
 						y={height * 0.18}
-						clipFunc={ctx => {
+						clipFunc={(ctx) => {
 							ctx.beginPath();
 							ctx.roundRect(0, 0, width, height * 0.82, 12);
 							ctx.closePath();
-						}}>
+						}}
+					>
 						<Group
 							y={0}
 							height={height * 0.6}
-							clipFunc={ctx => {
+							clipFunc={(ctx) => {
 								ctx.beginPath();
 								ctx.roundRect(0, 0, width, height * 0.6, 0);
 								ctx.closePath();
-							}}>
+							}}
+						>
 							<Circle
 								width={height * 4}
 								height={height * 4}
@@ -634,12 +607,7 @@ export const Video = (props = defaultDynamicProps as DynamicProps) => {
 								fillRadialGradientEndRadius={height}
 								fillRadialGradientStartPoint={{ x: 0, y: 0 }}
 								fillRadialGradientEndPoint={{ x: 0, y: 0 }}
-								fillRadialGradientColorStops={[
-									0,
-									'#ffba9f',
-									0.23,
-									'#f6acc1',
-								]}
+								fillRadialGradientColorStops={[0, "#ffba9f", 0.23, "#f6acc1"]}
 							/>
 							<Circle
 								width={height * 4}
@@ -653,9 +621,9 @@ export const Video = (props = defaultDynamicProps as DynamicProps) => {
 								fillRadialGradientEndPoint={{ x: 0, y: 0 }}
 								fillRadialGradientColorStops={[
 									0,
-									'rgba(0,0,0,0.07)',
+									"rgba(0,0,0,0.07)",
 									0.007,
-									'transparent',
+									"transparent",
 								]}
 							/>
 							{/* Search bar */}
@@ -672,12 +640,7 @@ export const Video = (props = defaultDynamicProps as DynamicProps) => {
 								/>
 
 								<SvgIconImage
-									Icon={
-										<BiSearchAlt
-											size={20}
-											color="#ff6a6a"
-										/>
-									}
+									Icon={<BiSearchAlt size={20} color="#ff6a6a" />}
 									src="/templates/wingai/search_bar.png"
 									height={20}
 									x={13}
@@ -685,7 +648,7 @@ export const Video = (props = defaultDynamicProps as DynamicProps) => {
 								/>
 								<Text
 									text={placeholder}
-									fill={'#71717b'}
+									fill={"#71717b"}
 									fontFamily="secondary"
 									fontSize={14}
 									x={40}
@@ -699,7 +662,7 @@ export const Video = (props = defaultDynamicProps as DynamicProps) => {
 									y={0}
 									width={width - 40}
 									height={height * 0.31}
-									fill={'#000000'}
+									fill={"#000000"}
 									cornerRadius={12}
 									shadowBlur={12}
 									shadowColor="#000000"
@@ -709,9 +672,7 @@ export const Video = (props = defaultDynamicProps as DynamicProps) => {
 								{props.chatSnapshot && (
 									<AnimatedLocalImage
 										y={height * 0.025}
-										src={URL.createObjectURL(
-											props.chatSnapshot
-										)}
+										src={URL.createObjectURL(props.chatSnapshot)}
 										width={width - 50}
 										x={5}
 										cornerRadius={12}
@@ -732,12 +693,7 @@ export const Video = (props = defaultDynamicProps as DynamicProps) => {
 								fillRadialGradientStartRadius={height * 3}
 								fillRadialGradientStartPoint={{ x: 0, y: 0 }}
 								fillRadialGradientEndPoint={{ x: 0, y: 0 }}
-								fillRadialGradientColorStops={[
-									0,
-									'#ffffff',
-									0.5,
-									'#ffffff',
-								]}
+								fillRadialGradientColorStops={[0, "#ffffff", 0.5, "#ffffff"]}
 								shadowBlur={21}
 								shadowOffsetY={8}
 								shadowColor="#000000"
@@ -748,10 +704,7 @@ export const Video = (props = defaultDynamicProps as DynamicProps) => {
 									<LocalImage
 										y={-4}
 										x={Math.max(
-											(width -
-												20 -
-												slogan.length * 10) /
-												2 -
+											(width - 20 - slogan.length * 10) / 2 -
 												10,
 											0
 										)}
@@ -790,7 +743,8 @@ export const Video = (props = defaultDynamicProps as DynamicProps) => {
 									y={height * 0.22 - 70}
 									width={width - padding * 2}
 									height={120}
-									trigger={toShowAnswer}>
+									trigger={toShowAnswer}
+								>
 									<Rect
 										width={width - 20}
 										height={70}
@@ -809,9 +763,9 @@ export const Video = (props = defaultDynamicProps as DynamicProps) => {
 										}}
 										fillLinearGradientColorStops={[
 											0,
-											'#fcebe6',
+											"#fcebe6",
 											1,
-											'#f9e6ea',
+											"#f9e6ea",
 										]}
 									/>
 									<Text
@@ -826,10 +780,7 @@ export const Video = (props = defaultDynamicProps as DynamicProps) => {
 										text={answer}
 										lineHeight={1.1}
 									/>
-									<Group
-										width={46 + 5}
-										x={width - 46 - 20}
-										y={-10}>
+									<Group width={46 + 5} x={width - 46 - 20} y={-10}>
 										<Rect
 											x={-20}
 											y={-3}
@@ -895,31 +846,34 @@ export const Video = (props = defaultDynamicProps as DynamicProps) => {
 };
 
 export const component = () => {
-	const [tab, setTab] = useState('image'),
+	const [tab, setTab] = useState("image"),
 		[dialogOpen, setDialogOpen] = useState(false),
 		[toDownload, setToDownload] = useState(false),
 		{ isRecording, setIsRecording } = useGlobalContext();
 
-	const [props, setProps] = useState(tab === 'image' ? defaultProps : defaultDynamicProps);
+	const [props, setProps] = useState(tab === "image" ? defaultProps : defaultDynamicProps);
 
-	useEffect(() => setProps(tab === 'image' ? defaultProps : defaultDynamicProps), [tab]);
+	useEffect(() => setProps(tab === "image" ? defaultProps : defaultDynamicProps), [tab]);
 
 	return (
 		<Dialog
-			onOpenChange={openState => {
+			onOpenChange={(openState) => {
 				setDialogOpen(openState);
 				if (!openState) setToDownload(false);
-			}}>
-			<DialogTrigger key={'dialog-trigger'}>
+			}}
+		>
+			<DialogTrigger key={"dialog-trigger"}>
 				<Image download={false} {...defaultProps} />
 			</DialogTrigger>
 			<DialogContent
-				key={'dialog-content'}
-				className="flex flex-row items-center gap-p p-p border border-zinc-600/50 !max-w-none w-max shadow-[0_0_7px_-1px_#b0e9ff4a]">
+				key={"dialog-content"}
+				className="flex flex-row items-center gap-p p-p border border-zinc-600/50 !max-w-none w-max shadow-[0_0_7px_-1px_#b0e9ff4a]"
+			>
 				<Tabs
-					onValueChange={tabValue => setTab(tabValue)}
+					onValueChange={(tabValue) => setTab(tabValue)}
 					defaultValue={tab}
-					className="shrink flex flex-col w-full items-center justify-start h-fit self-start mb-auto">
+					className="shrink flex flex-col w-full items-center justify-start h-fit self-start mb-auto"
+				>
 					<TabsList className="mx-auto">
 						<TabsTrigger value="image">Image</TabsTrigger>
 						<TabsTrigger value="video">Video</TabsTrigger>
@@ -934,13 +888,9 @@ export const component = () => {
 											type,
 											label,
 											default: defaultValue,
-											props: {
-												className,
-												...paramsProps
-											},
+											props: { className, ...paramsProps },
 											inputProps = {
-												className:
-													'w-full self-end justify-self-end mt-auto',
+												className: "w-full self-end justify-self-end mt-auto",
 											},
 										},
 									],
@@ -949,15 +899,16 @@ export const component = () => {
 									<span
 										key={index + key}
 										className={cn(
-											'flex flex-col gap-1 text-sm',
+											"flex flex-col gap-1 text-sm",
 											className
 										)}
-										{...paramsProps}>
+										{...paramsProps}
+									>
 										{label}
 
-										{type === 'image' ? (
+										{type === "image" ? (
 											<ImageLoader
-												onFileChange={file =>
+												onFileChange={(file) =>
 													setProps({
 														...props,
 														[key]: file,
@@ -969,11 +920,11 @@ export const component = () => {
 											<Input
 												type={
 													typeof defaultValue ===
-													'number'
-														? 'number'
-														: 'text'
+													"number"
+														? "number"
+														: "text"
 												}
-												onChange={e => {
+												onChange={(e) => {
 													if (
 														!e.target.value?.trim()
 															.length
@@ -983,7 +934,7 @@ export const component = () => {
 														...props,
 														[key]:
 															typeof defaultValue ===
-															'number'
+															"number"
 																? parseInt(
 																		e
 																			.target
@@ -995,8 +946,7 @@ export const component = () => {
 													});
 												}}
 												defaultValue={
-													props[key] ??
-													defaultValue
+													props[key] ?? defaultValue
 												}
 												{...inputProps}
 											/>
@@ -1009,7 +959,8 @@ export const component = () => {
 								className="cursor-pointer col-span-4 -col-end-1 w-full h-9 mt-auto self-end"
 								variant="outline"
 								size="sm"
-								onClick={() => setToDownload(true)}>
+								onClick={() => setToDownload(true)}
+							>
 								Download
 							</Button>
 						</div>
@@ -1024,13 +975,9 @@ export const component = () => {
 											type,
 											label,
 											default: defaultValue,
-											props: {
-												className,
-												...paramsProps
-											},
+											props: { className, ...paramsProps },
 											inputProps = {
-												className:
-													'w-full self-end justify-self-end mt-auto',
+												className: "w-full self-end justify-self-end mt-auto",
 											},
 										},
 									],
@@ -1039,15 +986,16 @@ export const component = () => {
 									<span
 										key={index + key}
 										className={cn(
-											'flex flex-col gap-1 text-sm',
+											"flex flex-col gap-1 text-sm",
 											className
 										)}
-										{...paramsProps}>
+										{...paramsProps}
+									>
 										{label}
 
-										{type === 'image' ? (
+										{type === "image" ? (
 											<ImageLoader
-												onFileChange={file =>
+												onFileChange={(file) =>
 													setProps({
 														...props,
 														[key]: file,
@@ -1059,11 +1007,11 @@ export const component = () => {
 											<Input
 												type={
 													typeof defaultValue ===
-													'number'
-														? 'number'
-														: 'text'
+													"number"
+														? "number"
+														: "text"
 												}
-												onChange={e => {
+												onChange={(e) => {
 													if (
 														!e.target.value?.trim()
 															.length
@@ -1073,7 +1021,7 @@ export const component = () => {
 														...props,
 														[key]:
 															typeof defaultValue ===
-															'number'
+															"number"
 																? parseFloat(
 																		e
 																			.target
@@ -1099,14 +1047,15 @@ export const component = () => {
 								className="relative cursor-pointer col-span-4 -col-end-1 h-9 mt-auto self-end"
 								variant="outline"
 								size="sm"
-								onClick={() => setIsRecording(prev => !prev)}>
+								onClick={() => setIsRecording((prev) => !prev)}
+							>
 								{isRecording && (
 									<>
 										<span className="z-20 absolute top-0 right-0 translate-x-1 -translate-y-1 bg-red-500/75 rounded-full size-3 scale-65" />
 										<span className="z-30 absolute top-0 right-0 translate-x-1 -translate-y-1 bg-red-500/85 rounded-full size-3 animate-pulse duration-800 [animation-timing-function:cubic-bezier(0.4,0,.2,.4,1)]" />
 									</>
 								)}
-								{`${isRecording ? 'Stop' : 'Record'}`}
+								{`${isRecording ? "Stop" : "Record"}`}
 							</Button>
 						</div>
 					</TabsContent>
@@ -1116,20 +1065,12 @@ export const component = () => {
 					className="![background-color:transparent] bg-radial-[at_center] from-white to-90% to-transparent !h-[-webkit-fill-available]"
 				/>
 				<div className="contents">
-					{tab === 'image' ? (
-						<Image
-							download={toDownload}
-							onDownload={() => setToDownload(false)}
-							{...props}
-						/>
+					{tab === "image" ? (
+						<Image download={toDownload} onDownload={() => setToDownload(false)} {...props} />
 					) : (
 						<Video
 							// @ts-ignore
-							key={`video-${isRecording}-${JSON.stringify(
-								props,
-								null,
-								2
-							)}`}
+							key={`video-${isRecording}-${JSON.stringify(props, null, 2)}`}
 							record={isRecording}
 							onStopRecording={() => setIsRecording(false)}
 							{...props}
