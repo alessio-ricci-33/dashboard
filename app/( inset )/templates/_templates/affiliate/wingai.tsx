@@ -66,6 +66,30 @@ export const params = {
 			className: 'text-start',
 		},
 	},
+
+	placeholder: {
+		type: String,
+		label: 'Search bar',
+		default: 'Scrivi i tuoi interessi ...',
+		props: {
+			className: 'col-span-6 w-full',
+		},
+		inputProps: {
+			className: 'text-start',
+		},
+	},
+
+	slogan: {
+		type: String,
+		label: 'Slogan',
+		default: 'Fatti capire meglio!',
+		props: {
+			className: 'col-span-6 w-full',
+		},
+		inputProps: {
+			className: 'text-start',
+		},
+	},
 	chatSnapshot: {
 		type: 'image',
 		label: 'Chat snapshot',
@@ -73,22 +97,47 @@ export const params = {
 		props: {
 			className: 'col-span-8 row-span-3 w-full',
 		},
-	},
-	placeholder: {
-		type: String,
-		label: 'Search bar',
-		default: 'Scrivi i tuoi interessi ...',
-		props: {
-			className: 'col-span-8 w-full',
-		},
 		inputProps: {
-			className: 'text-start',
+			className: 'size-full text-start self-start m-none',
 		},
 	},
 };
 
 export const dynamicParams = {
 	...params,
+	fadeIn: {
+		type: Number,
+		label: 'Fad in',
+		default: 0.4,
+		props: {
+			className: 'col-span-4 -col-end-1',
+		},
+		inputProps: {
+			step: 0.1,
+		},
+	},
+	freeze: {
+		type: Number,
+		label: 'Freeze',
+		default: 3.5,
+		props: {
+			className: 'col-span-4 -col-end-1',
+		},
+		inputProps: {
+			step: 0.1,
+		},
+	},
+	fadeOut: {
+		type: Number,
+		label: 'Fad out',
+		default: 0.175,
+		props: {
+			className: 'col-span-4 -col-end-1',
+		},
+		inputProps: {
+			step: 0.1,
+		},
+	},
 } as const;
 
 export const defaultProps: Props = Object.entries(params).reduce(
@@ -104,7 +153,7 @@ export const defaultDynamicProps: DynamicProps = Object.entries(dynamicParams).r
 export const Image = (
 	props = defaultProps as Props & { download?: boolean; onDownload?: () => void }
 ) => {
-	const { height, width, padding, placeholder, answer } = Object.entries(params).reduce(
+	const { height, width, padding, placeholder, answer, slogan } = Object.entries(params).reduce(
 		(acc, [key, { default: defaultValue }]) => {
 			if (!props[key]) acc[key] = defaultValue;
 
@@ -262,26 +311,45 @@ export const Image = (
 								shadowColor="#000000"
 							/>
 							<Group width={width - 20} x={10} y={-10}>
-								<LocalImage
-									y={-4}
-									x={40}
-									src="/templates/wingai/points_up.png"
-									width={12}
-								/>
-								<Text
-									align="center"
-									width={width - 20}
-									fontFamily="secondary"
-									fontSize={16}
-									fill="#ffa46b"
-									text="Fatti capire meglio!"
-								/>
-								<LocalImage
-									y={-4}
-									x={width - 72}
-									src="/templates/wingai/points_up.png"
-									width={12}
-								/>
+								<Group width={width - 20} x={0}>
+									<LocalImage
+										y={-4}
+										x={Math.max(
+											(width -
+												20 -
+												slogan.length * 10) /
+												2 -
+												10,
+											0
+										)}
+										src="/templates/wingai/points_up.png"
+										width={12}
+									/>
+									<Group width={width - 20 - 14 * 2} x={14}>
+										<Text
+											align="center"
+											verticalAlign="center"
+											fontFamily="secondary"
+											fontSize={16}
+											fill="#ffa46b"
+											text={slogan}
+											lineHeight={1.1}
+											width={width - 20 - 14 * 2}
+										/>
+									</Group>
+									<LocalImage
+										y={-4}
+										x={Math.min(
+											(width - 20) / 2 +
+												(slogan.length * 10) / 2 +
+												10 -
+												12,
+											width - 20 - 12
+										)}
+										src="/templates/wingai/points_up.png"
+										width={12}
+									/>
+								</Group>
 								<Group y={height * 0.22 - 70}>
 									<Rect
 										width={width - 20}
@@ -387,7 +455,9 @@ export const Image = (
 };
 
 export const Video = (props = defaultDynamicProps as DynamicProps) => {
-	const { height, width, padding, placeholder, answer } = Object.entries(dynamicParams).reduce(
+	const { height, width, padding, placeholder, answer, slogan } = Object.entries(
+		dynamicParams
+	).reduce(
 		(acc, [key, { default: defaultValue }]) => {
 			if (!props[key]) acc[key] = defaultValue;
 
@@ -400,11 +470,15 @@ export const Video = (props = defaultDynamicProps as DynamicProps) => {
 		[isRecording, setIsRecording] = useState(props.record ?? false);
 
 	const [toFadeIn, setToFadeIn] = useState(false),
+		[toShowAnswer, setToShowAnswer] = useState(false),
 		[toFadeOut, setToFadeOut] = useState(false);
 
 	useEffect(() => {
-		setTimeout(() => {
+		setTimeout(async () => {
 			setToFadeIn(true);
+
+			await new Promise(r => setTimeout(r, 650));
+			setToShowAnswer(true);
 		}, 1000);
 	}, [props]);
 
@@ -455,6 +529,12 @@ export const Video = (props = defaultDynamicProps as DynamicProps) => {
 		},
 	});
 
+	const animation = {
+		fadeIn: props.fadeIn * 1000,
+		fadeOut: props.fadeOut * 1000,
+		freeze: props.freeze * 1000,
+	};
+
 	return (
 		<Stage
 			ref={stageRef}
@@ -466,15 +546,16 @@ export const Video = (props = defaultDynamicProps as DynamicProps) => {
 			<animated.Layer
 				key={JSON.stringify(props)}
 				{...$({
-					from: { opacity: 0, y: 0 },
+					from: { opacity: 0, y: 0, scaleY: 0.9 },
 					to: {
 						opacity: toFadeIn ? 1 : 0,
+						scaleY: toFadeIn ? 1 : 0.9,
 					},
 					config: {
 						tension: isRecording ? 280 : 170,
 						friction: isRecording ? 22 : 26,
 						precision: 0.00001,
-						duration: toFadeIn ? 500 : 250,
+						duration: toFadeIn ? animation.fadeIn : animation.fadeOut,
 					},
 
 					onRest: async () => {
@@ -500,7 +581,11 @@ export const Video = (props = defaultDynamicProps as DynamicProps) => {
 						shadowBlur={35}
 						shadowColor="#000000"
 					/>
-					<Group width={width} height={height * 0.18} y={17} x={0}>
+					<Group
+						width={width}
+						height={height * 0.18}
+						y={height * 0.09 - 18}
+						x={0}>
 						<SvgIconImage
 							Icon={<HiArrowLeft size={18} color="#000" />}
 							width={18}
@@ -659,26 +744,45 @@ export const Video = (props = defaultDynamicProps as DynamicProps) => {
 							/>
 
 							<Group width={width - 20} x={10} y={-10}>
-								<LocalImage
-									y={-4}
-									x={40}
-									src="/templates/wingai/points_up.png"
-									width={12}
-								/>
-								<Text
-									align="center"
-									width={width - padding}
-									fontFamily="secondary"
-									fontSize={16}
-									fill="#ffa46b"
-									text="Fatti capire meglio!"
-								/>
-								<LocalImage
-									y={-4}
-									x={width - 72}
-									src="/templates/wingai/points_up.png"
-									width={12}
-								/>
+								<Group width={width - 20} x={0}>
+									<LocalImage
+										y={-4}
+										x={Math.max(
+											(width -
+												20 -
+												slogan.length * 10) /
+												2 -
+												10,
+											0
+										)}
+										src="/templates/wingai/points_up.png"
+										width={12}
+									/>
+									<Group width={width - 20 - 14 * 2} x={14}>
+										<Text
+											align="center"
+											verticalAlign="center"
+											fontFamily="secondary"
+											fontSize={16}
+											fill="#ffa46b"
+											text={slogan}
+											lineHeight={1.1}
+											width={width - 20 - 14 * 2}
+										/>
+									</Group>
+									<LocalImage
+										y={-4}
+										x={Math.min(
+											(width - 20) / 2 +
+												(slogan.length * 10) / 2 +
+												10 -
+												12,
+											width - 20 - 12
+										)}
+										src="/templates/wingai/points_up.png"
+										width={12}
+									/>
+								</Group>
 
 								{/* Answer */}
 								<AnimatedAnswerGroup
@@ -686,7 +790,7 @@ export const Video = (props = defaultDynamicProps as DynamicProps) => {
 									y={height * 0.22 - 70}
 									width={width - padding * 2}
 									height={120}
-									trigger={toFadeIn}>
+									trigger={toShowAnswer}>
 									<Rect
 										width={width - 20}
 										height={70}
@@ -821,7 +925,7 @@ export const component = () => {
 						<TabsTrigger value="video">Video</TabsTrigger>
 					</TabsList>
 					<TabsContent value="image">
-						<div className="grid grid-cols-[repeat(12,1.5rem)] auto-rows-fr justify-items-start gap-p w-full h-fit self-start mb-auto">
+						<div className="grid grid-cols-[repeat(12,1.5rem)] auto-rows-fr grid-flow-row justify-items-start gap-p w-full h-fit self-start mb-auto">
 							{Object.entries(params).map(
 								(
 									[
@@ -834,7 +938,10 @@ export const component = () => {
 												className,
 												...paramsProps
 											},
-											inputProps = {},
+											inputProps = {
+												className:
+													'w-full self-end justify-self-end mt-auto',
+											},
 										},
 									],
 									index
@@ -866,7 +973,6 @@ export const component = () => {
 														? 'number'
 														: 'text'
 												}
-												className="w-full"
 												onChange={e => {
 													if (
 														!e.target.value?.trim()
@@ -892,6 +998,7 @@ export const component = () => {
 													props[key] ??
 													defaultValue
 												}
+												{...inputProps}
 											/>
 										)}
 									</span>
@@ -899,7 +1006,7 @@ export const component = () => {
 							)}
 
 							<Button
-								className="cursor-pointer col-span-4 w-full h-9 mt-auto self-end"
+								className="cursor-pointer col-span-4 -col-end-1 w-full h-9 mt-auto self-end"
 								variant="outline"
 								size="sm"
 								onClick={() => setToDownload(true)}>
@@ -908,7 +1015,7 @@ export const component = () => {
 						</div>
 					</TabsContent>
 					<TabsContent value="video">
-						<div className="grid grid-cols-[repeat(12,1.5rem)] auto-rows-fr gap-p w-full">
+						<div className="grid grid-cols-[repeat(12,1.5rem)] auto-rows-fr grid-flow-row gap-p w-full">
 							{Object.entries(dynamicParams).map(
 								(
 									[
@@ -921,7 +1028,10 @@ export const component = () => {
 												className,
 												...paramsProps
 											},
-											inputProps = {},
+											inputProps = {
+												className:
+													'w-full self-end justify-self-end mt-auto',
+											},
 										},
 									],
 									index
@@ -953,7 +1063,6 @@ export const component = () => {
 														? 'number'
 														: 'text'
 												}
-												className="w-full self-end justify-self-end mt-auto"
 												onChange={e => {
 													if (
 														!e.target.value?.trim()
@@ -987,7 +1096,7 @@ export const component = () => {
 							)}
 
 							<Button
-								className="relative cursor-pointer col-span-4 h-9 mt-auto self-end"
+								className="relative cursor-pointer col-span-4 -col-end-1 h-9 mt-auto self-end"
 								variant="outline"
 								size="sm"
 								onClick={() => setIsRecording(prev => !prev)}>
@@ -1004,7 +1113,7 @@ export const component = () => {
 				</Tabs>
 				<Separator
 					orientation="vertical"
-					className="![background-color:transparent] bg-radial-[at_center] from-white to-80% to-transparent !h-[-webkit-fill-available]"
+					className="![background-color:transparent] bg-radial-[at_center] from-white to-90% to-transparent !h-[-webkit-fill-available]"
 				/>
 				<div className="contents">
 					{tab === 'image' ? (

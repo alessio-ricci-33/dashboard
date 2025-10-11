@@ -90,7 +90,7 @@ export const dynamicParams = {
 	freeze: {
 		type: Number,
 		label: '',
-		default: 2.5,
+		default: 3,
 		props: {
 			className: 'col-span-2',
 		},
@@ -657,7 +657,7 @@ export const component = () => {
 
 				<Separator
 					orientation="vertical"
-					className="![background-color:transparent] bg-radial-[at_center] from-white to-transparent !h-[-webkit-fill-available]"
+					className="![background-color:transparent] bg-radial-[at_center] from-white to-90% to-transparent !h-[-webkit-fill-available]"
 				/>
 				<div className="contents shrink-0">
 					{tab === 'image' ? (

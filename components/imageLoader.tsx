@@ -44,7 +44,7 @@ export const ImageLoader = ({
 				onChange={handleFileChange}
 			/>
 
-			<div className="relative flex justify-center items-center aspect-video size-full rounded-lg overflow-hidden border border-foreground/20">
+			<div className="relative flex justify-center items-center aspect-video size-full rounded-lg overflow-hidden">
 				{preview ? (
 					<>
 						<img
@@ -55,14 +55,14 @@ export const ImageLoader = ({
 						<Button
 							type="button"
 							onClick={handleRemove}
-							className="z-10 absolute top-0 right-0 rounded-tl-none rounded-br-none rounded-bl-lg shadow-[0_0_10px_2px_#00000024] bg-foreground/35 backdrop-blur-lg p-1 aspect-square">
+							className="z-10 absolute top-0 right-0 rounded-tl-none rounded-br-none rounded-bl-lg shadow-[0_0_10px_2px_#00000024] bg-foreground/35 backdrop-blur-lg p-1 aspect-square border-0 border-none ring-0">
 							X
 						</Button>
 					</>
 				) : (
 					<Button
 						type="button"
-						className="size-full border-foreground/25 border-dashed border-2 bg-transparent hover:bg-transparent text-foreground"
+						className="size-full border-foreground/25 border-dashed border-2 bg-transparent hover:bg-transparent text-foreground ring-0 outline-0 focus-visible:ring-0"
 						onClick={() => fileInput.current?.click()}>
 						Carica immagine
 					</Button>

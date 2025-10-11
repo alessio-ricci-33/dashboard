@@ -15,7 +15,6 @@ export function LocalImage({ src, width, height, ...props }: LocalImageProps) {
 	const [image] = useImage(src);
 
 	const dimensions = useMemo(() => {
-		if (src.includes('chat')) console.log(image);
 		if (!image) return { width: 0, height: 0 };
 
 		const ratio = image.height / image.width;

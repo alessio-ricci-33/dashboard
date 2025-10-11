@@ -51,7 +51,7 @@ export default function RootLayout({ sidebar, children: inset }: Layouts) {
 					<body className="antialiased">
 						<div id="content">
 							<div id="entry">
-								<header className="shrink-0 flex flex-row items-center justify-start h-clamp-8 w-full gap-p">
+								<header className="shrink-0 flex flex-row items-center justify-between h-clamp-8 w-full gap-p pr-p">
 									<span className="flex flex-row items-center w-(--sidebar-width) h-full gap-1.5">
 										<div className="relative shrink-0 !w-clamp-10 aspect-square -ml-0.5">
 											<Image

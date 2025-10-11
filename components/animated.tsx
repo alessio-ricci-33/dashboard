@@ -19,8 +19,10 @@ export const AnimatedLocalImage = ({
 	onRest?: () => void;
 } & LocalImageProps) => {
 	const styles = useSpring({
-		from: { opacity: 0, scale: 1.3 },
-		to: trigger ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 1.3 },
+		from: { opacity: 0, scaleX: 1, scaleY: 0.75 },
+		to: trigger
+			? { opacity: 1, scaleX: 1, scaleY: 1 }
+			: { opacity: 0, scaleX: 1, scaleY: 0.75 },
 		config: { tension: 200, friction: 20, duration: 500 },
 		onRest,
 	});
