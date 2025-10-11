@@ -328,7 +328,7 @@ export const Video = (props = defaultProps as Props & { download?: boolean; onDo
 				const url = window.URL.createObjectURL(blob);
 				const a = document.createElement("a");
 				a.href = url;
-				a.download = "popup-island.mov";
+				a.download = "popup.mov";
 				document.body.appendChild(a);
 				a.click();
 				a.remove();
