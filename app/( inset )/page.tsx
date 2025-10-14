@@ -59,14 +59,14 @@ export default function Page() {
 	};
 
 	return (
-		<section className="flex flex-col w-full h-fit gap-p p-6">
+		<section className="flex flex-col w-full h-fit gap-p ">
 			<h1 className="text-2xl font-semibold tracking-tight">AI Title Generator</h1>
 
 			<div className="grid grid-cols-12 auto-rows-fr gap-p">
 				{/* CONFIGURAZIONE MODELLO E SYSTEM INSTRUCTION */}
 				<div className="col-span-12 md:col-span-8 row-span-3 flex flex-col gap-2">
-					<div className="flex flex-row items-center justify-between gap-2">
-						<label className="text-sm font-medium text-muted-foreground">
+					<div className="flex flex-row items-end justify-between gap-2">
+						<label className="text-sm font-medium text-muted-foreground leading-none">
 							Gen. model
 						</label>
 						<Select
@@ -102,8 +102,8 @@ export default function Page() {
 
 				<div className="grid grid-cols-subgrid grid-rows-subgrid gap-p col-span-full row-span-4">
 					{/* AREA PROMPT */}
-					<div className="relative flex flex-col col-span-8 row-span-5 col-start-1 gap-p">
-						<label className="text-sm font-medium text-muted-foreground">
+					<div className="relative flex flex-col col-span-8 row-span-5 col-start-1 gap-p pt-p">
+						<label className="text-sm font-medium text-muted-foreground leading-none">
 							Transcription
 						</label>
 						<Textarea
@@ -122,7 +122,7 @@ export default function Page() {
 					</div>
 
 					{/* RISULTATI */}
-					<section className="grid grid-cols-1 auto-rows-fr gap-p col-span-4 row-span-4 pt-9">
+					<section className="grid grid-cols-1 auto-rows-fr gap-p col-span-4 row-span-4 pt-10">
 						{Object.keys(results).length > 0 &&
 							Object.entries(results).map(([key, value]) => (
 								<div
