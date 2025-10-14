@@ -28,7 +28,6 @@ export default function Page() {
 	const handleGenerate = async () => {
 		if (!prompt.trim()) return;
 		setLoading(true);
-		setResults({});
 
 		try {
 			// ESEMPIO DI CHIAMATA FUTURA:
