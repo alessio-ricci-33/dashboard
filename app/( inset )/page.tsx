@@ -92,6 +92,7 @@ export default function Page() {
 						</Select>
 					</div>
 					<Textarea
+						spellCheck={false}
 						value={systemInstruction}
 						onChange={e => setSystemInstruction(e.target.value)}
 						placeholder="Istruzioni di sistema (facoltative, per personalizzare lo stile o il tono del modello)..."
@@ -107,6 +108,7 @@ export default function Page() {
 						</label>
 						<Textarea
 							value={prompt}
+							spellCheck={false}
 							onChange={e => setPrompt(e.target.value)}
 							placeholder="Incolla qui la trascrizione..."
 							className="h-full resize-none"
