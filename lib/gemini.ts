@@ -1,34 +1,45 @@
-import { env } from 'process';
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import { env } from 'node:process';
+import { GoogleGenAI } from '@google/genai';
+import { shortsTitles } from '@/constants/system-instructions';
 
-import type { GenerativeModel, ModelParams } from '@google/generative-ai';
+export const genai = new GoogleGenAI({ apiKey: env.GEMINI_API_KEY_2 });
 
-const genAI = new GoogleGenerativeAI(env.GEMINI_API_KEY);
+export const { models } = genai;
+export const model = models.generateContent;
 
-const modelsParams: ModelParams[] = [
-	{
-		model: 'gemini-1.5-flash',
-		generationConfig: { temperature: 0.75, maxOutputTokens: 1650 },
-	},
-	{
-		model: 'gemini-1.5-flash-8b',
-		generationConfig: { temperature: 0.63, maxOutputTokens: 1380 },
-	},
-	{ model: 'gemini-1.5-pro', generationConfig: { temperature: 1.1, maxOutputTokens: 1085 } },
-	{
-		model: 'gemini-2.0-flash',
-		generationConfig: { temperature: 0.875, maxOutputTokens: 975 },
-	},
-];
+export const genShortTitles = async ({
+	modelName = 'gemini-2.0-flash',
+	prompt,
+	systemInstruction = shortsTitles,
+}: {
+	modelName?: ModelName;
+	prompt: string;
+	systemInstruction: string;
+}) => {
+	return await model({
+		model: modelName,
+		config: {
+			candidateCount: 1,
+			temperature: 0.45,
+			maxOutputTokens: 500, // Aumenta per permettere più discriminatori e descrizioni più ricche
+			responseMimeType: 'application/json',
+			systemInstruction: systemInstruction,
+		},
+		contents: [
+			{
+				role: 'user',
+				parts: [
+					{
+						text: prompt,
+					},
+				],
+			},
+		],
+	});
+};
 
-const models = new Map(
-	modelsParams.map(({ model, ...params }, i) => [
-		model,
-		genAI.getGenerativeModel({
-			model,
-			...params,
-		}),
-	])
-);
-
-export default (model: string = 'gemini-1.5-flash'): GenerativeModel => models.get(model)!;
+export type ModelName =
+	| 'gemini-2.5-pro'
+	| 'gemini-2.5-flash'
+	| 'gemini-2.5-flash-lite-preview-06-17'
+	| 'gemini-2.0-flash';
