@@ -128,7 +128,7 @@ export default function Home() {
 										key={`cell-${index}`}
 										fill={
 											entry.delta >= 0
-												? '#4ade80'
+												? '#82ca9d'
 												: '#f87171'
 										} // Verde o Rosso
 									/>
