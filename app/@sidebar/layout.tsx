@@ -1,6 +1,7 @@
 import { Button } from '@/ui/button';
 import { FaPlus } from 'react-icons/fa6';
 import { TbTemplate } from 'react-icons/tb';
+import { FiGrid } from 'react-icons/fi';
 
 import { Dialog, DialogContent, DialogTitle, DialogTrigger } from '@/ui/dialog';
 import {
@@ -49,6 +50,21 @@ export default ({ children }: PropsWithChildren) => {
 									<hgroup className="expand-sidebar-item flex flex-col justify-around h-full text-muted-foreground menu-item-hover:text-sidebar-accent-foreground">
 										<h2 className="font-bold leading-none">
 											Templates
+										</h2>
+									</hgroup>
+								</Link>
+							</SidebarMenuButton>
+						</SidebarMenuItem>
+						<SidebarMenuItem className="collapsed:!w-full">
+							<SidebarMenuButton asChild>
+								<Link
+									href="/tools"
+									className="rounded-md hover:bg-zinc-900 cursor-pointer p-sidebar-p collapsed:!w-full [&>svg]:size-5 [&>svg]:text-zinc-400">
+									<FiGrid className="collapse-sidebar-item opacity-100 collapsed:!w-full" />
+
+									<hgroup className="expand-sidebar-item flex flex-col justify-around h-full text-muted-foreground menu-item-hover:text-sidebar-accent-foreground">
+										<h2 className="font-bold leading-none">
+											Tools
 										</h2>
 									</hgroup>
 								</Link>
