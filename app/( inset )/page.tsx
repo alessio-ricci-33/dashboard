@@ -110,13 +110,13 @@ export default function Home() {
 							/>
 							<Tooltip content={<CustomTooltip />} />
 							<Legend />
-							<Bar
+							{/* <Bar
 								yAxisId="left"
 								dataKey="count"
 								name="Views Totali"
 								fill="#8884d8"
 								radius={[4, 4, 0, 0]}
-							/>
+							/> */}
 							<Bar
 								yAxisId="right"
 								dataKey="delta"
