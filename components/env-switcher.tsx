@@ -4,7 +4,7 @@ import * as React from 'react';
 
 import Image from 'next/image';
 import { Separator } from '@/ui/separator';
-import { useRouter, usePathname } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/ui/select';
 import { cn } from '@/utils/shadcn';
 
@@ -19,10 +19,10 @@ const Env = ({
 }) => {
 	return (
 		<SelectItem value={name.toLowerCase()} className="cursor-pointer !rounded-none">
-			<div className="flex flex-row size-full justify-start items-center gap-2 !pr-2.5 overflow-hidden">
-				<div className={'relative h-3/4 rounded-full aspect-square'}>
+			<div className="flex flex-row size-full justify-start items-center gap-2.5 !pr-0 overflow-hidden">
+				<div className={'relative h-8 rounded-full aspect-square'}>
 					<Image
-						className="!w-auto !h-full my-auto rounded-full object-contain"
+						className="!w-auto !h-full my-auto rounded-full object-cover"
 						src={icon}
 						alt="Acme Logo"
 						fill
@@ -66,10 +66,11 @@ export default ({
 			<Select defaultValue={envs[0].name} onOpenChange={setOpen}>
 				<SelectTrigger
 					className={cn(
-						'[&>span]:flex [&>span]:size-full [&>span]:w-full shadow-none bg-transparent relative flex-row justify-start items-start size-full !p-0 cursor-pointer !outline-none focus-within:outline-none !ring-0 !border-none  focus-visible:ring-0 overflow-hidden',
+						'[&>svg]:-right-1 [&>span]:flex [&>span]:size-full [&>span]:w-full shadow-none bg-transparent relative flex-row justify-start items-start size-full !p-0 cursor-pointer !outline-none focus-within:outline-none !ring-0 !border-none  focus-visible:ring-0 overflow-hidden',
 						className
 					)}>
 					<SelectValue
+						className=""
 						placeholder={
 							<div className="flex flex-col justify-around items-start gap-y-0.5">
 								<h2 className="text-sm font-bold leading-none">
@@ -84,14 +85,14 @@ export default ({
 				</SelectTrigger>
 				<SelectContent
 					side="bottom"
-					align="start"
-					sideOffset={7}
-					alignOffset={-4}
+					align="center"
+					sideOffset={9}
+					alignOffset={0}
 					className="flex gap-p items-center w-full text-neutral-400 rounded-md border border-zinc-600/45 bg-sidebar dark:shadow-[0_0_7px_-1px_#b0e9ff4a] shadow-[0_0_7px_-1px_#00000055]">
 					{envs.map((env, i) => (
 						<div
 							key={i}
-							className="relative group grid grid-rows-subgrid grid-cols-subgrid !p-0 w-full overflow-hidden">
+							className="relative group grid grid-rows-subgrid grid-cols-subgrid !px-0.75 !py-1.5 w-full overflow-hidden">
 							{i !== 0 && (
 								<Separator className="z-30 absolute top-0 left-0 bg-neutral-800 w-full" />
 							)}
