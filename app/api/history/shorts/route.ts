@@ -7,5 +7,5 @@ export const GET = async (req: Request) =>
 		const ids = await Short.find({}, { video_id: 1, uuid: 1 }).lean();
 
 		// Ordina per UUID v7 (lexicographically ordinabile)
-		return ids.sort((a, b) => a.uuid.localeCompare(b.uuid)).map(s => s.video_id);
+		return ids.sort((a, b) => b.uuid.localeCompare(a.uuid)).map(s => s.video_id);
 	});
