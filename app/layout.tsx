@@ -16,6 +16,7 @@ import EnvSwitcher from '@/components/env-switcher';
 import envs from '@/constants/projects';
 import localFont from 'next/font/local';
 import { GlobalProvider } from '@/hooks/global-context';
+import Link from 'next/link';
 
 const logo = localFont({
 	src: './fonts/logo.otf',
@@ -53,7 +54,9 @@ export default function RootLayout({ sidebar, children: inset }: Layouts) {
 							<div id="entry">
 								<header className="shrink-0 flex flex-row items-center justify-between h-clamp-8 w-full gap-p pr-p">
 									<span className="flex flex-row items-center w-(--sidebar-width) h-full gap-1.5">
-										<div className="relative shrink-0 !w-clamp-10 aspect-square -ml-0.5">
+										<Link
+											href={'/'}
+											className="relative shrink-0 !w-clamp-10 aspect-square -ml-0.5">
 											<Image
 												style={{
 													WebkitBoxReflect:
@@ -64,7 +67,7 @@ export default function RootLayout({ sidebar, children: inset }: Layouts) {
 												alt="Acme Logo"
 												fill
 											/>
-										</div>
+										</Link>
 										<span
 											className="text-lg font-bold text-zinc-700"
 											style={{

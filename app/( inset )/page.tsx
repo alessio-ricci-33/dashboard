@@ -10,6 +10,7 @@ import {
 	CartesianGrid,
 	ResponsiveContainer,
 	Legend,
+	Cell,
 } from 'recharts';
 
 type DataPoint = {
@@ -121,9 +122,18 @@ export default function Home() {
 								yAxisId="right"
 								dataKey="delta"
 								name="Δ Rispetto Barra Precedente"
-								fill="#82ca9d"
-								radius={[4, 4, 0, 0]}
-							/>
+								radius={[4, 4, 0, 0]}>
+								{data.map((entry, index) => (
+									<Cell
+										key={`cell-${index}`}
+										fill={
+											entry.delta >= 0
+												? '#4ade80'
+												: '#f87171'
+										} // Verde o Rosso
+									/>
+								))}
+							</Bar>
 						</BarChart>
 					</ResponsiveContainer>
 				)}
