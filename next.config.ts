@@ -1,3 +1,4 @@
+import withPWA from 'next-pwa';
 import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
@@ -57,4 +58,13 @@ const nextConfig: NextConfig = {
 	},
 };
 
-export default nextConfig;
+// Avvolgi la configurazione con withPWA solo in produzione
+const isProd = process.env.NODE_ENV === 'production';
+
+export default isProd
+	? withPWA({
+			dest: 'public',
+			register: true,
+			skipWaiting: true,
+	  })(nextConfig)
+	: nextConfig;

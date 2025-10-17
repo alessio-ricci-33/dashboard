@@ -1,0 +1,21 @@
+{
+	"name": "msgi.it",
+	"short_name": "msgi",
+	"start_url": "/",
+	"display": "standalone",
+	"background_color": "#000000",
+	"theme_color": "#000000",
+	"description": "The best place to read stories from messaggi.italia",
+	"icons": [
+		{
+			"src": "/192x192.ico",
+			"type": "image/x-icon",
+			"sizes": "192x192"
+		},
+		{
+			"src": "/512x512.ico",
+			"type": "image/x-icon",
+			"sizes": "512x512"
+		}
+	]
+}
