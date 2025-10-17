@@ -17,6 +17,7 @@ import envs from '@/constants/projects';
 import localFont from 'next/font/local';
 import { GlobalProvider } from '@/hooks/global-context';
 import Link from 'next/link';
+import InstallPWAButton from '@/components/InstallPWAButton';
 
 const logo = localFont({
 	src: './fonts/logo.otf',
@@ -48,6 +49,7 @@ export default function RootLayout({ sidebar, children: inset }: Layouts) {
 			lang="it"
 			className={`${logo.variable} ${secondary.variable} antialiased`}
 			data-theme="dark">
+			<InstallPWAButton />
 			<ThemeProvider defaultValue="dark">
 				<GlobalProvider>
 					<body className="antialiased">
