@@ -9,7 +9,7 @@ import templates from './_templates/_export';
 
 export default function Page() {
 	return (
-		<div className="flex flex-col justify-start items-start gap-p">
+		<div className="flex flex-col justify-start items-start gap-p px-p">
 			{templates.map((section, index) => (
 				<>
 					{index > 0 && <Separator />}

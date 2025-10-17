@@ -10,7 +10,7 @@ import BreadCrumbNav from '@/components/BreadCrumbNav';
 
 export default function Layout({ children }: PropsWithChildren) {
 	return (
-		<SidebarInset className="relative !max-h-full md:!max-h-svh shrink-0 gap-(--external-p) ">
+		<SidebarInset className="relative !max-h-full md:!max-h-svh shrink-0 gap-(--external-p)">
 			<div
 				id="chatContainer"
 				className="relative size-full shrink-1 flex flex-col bg-background border-t border-l border-zinc-600/45 dark:shadow-[inset_4px_4px_17px_-10px_#b0e9ff4a] shadow-[inset_4px_4px_17px_-10px_#00000055] max-lg:rounded-t-3xl rounded-tl-lg gap-p py-p">

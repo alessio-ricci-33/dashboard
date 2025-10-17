@@ -59,7 +59,7 @@ export default function Page() {
 	};
 
 	return (
-		<section className="flex flex-col w-full h-fit gap-p ">
+		<section className="flex flex-col w-full h-fit gap-p px-p">
 			<h1 className="text-2xl font-semibold tracking-tight">AI Title Generator</h1>
 
 			<div className="grid grid-cols-12 auto-rows-fr gap-p">
