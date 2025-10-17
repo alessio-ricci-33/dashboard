@@ -8,13 +8,13 @@
 	"description": "The best place to read stories from messaggi.italia",
 	"icons": [
 		{
-			"src": "/192x192.ico",
-			"type": "image/x-icon",
+			"src": "/192x192.png",
+			"type": "image/png",
 			"sizes": "192x192"
 		},
 		{
-			"src": "/512x512.ico",
-			"type": "image/x-icon",
+			"src": "/512x512.png",
+			"type": "image/png",
 			"sizes": "512x512"
 		}
 	]
