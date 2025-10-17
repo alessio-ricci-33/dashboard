@@ -1,5 +1,6 @@
 'use client';
 
+import { Separator } from '@/ui/separator';
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
 import {
@@ -90,14 +91,20 @@ export default function Home() {
 	};
 
 	return (
-		<div className="w-full h-[500px] space-y-4">
+		<div className="flex flex-col gap-p w-full px-p">
 			<h1 className="text-2xl font-semibold">Shorts Analytics</h1>
 			{loading && <div>Loading...</div>}
 			<div className="grid auto-rows-fr w-full gap-[calc(var(--p)*2)]">
 				{shorts.map((short, index) => (
 					<div
 						key={index}
-						className="flex flex-row justify-between items-start">
+						className="relative flex flex-row justify-between items-start">
+						{index > 0 && (
+							<Separator
+								className="absolute -top-p -left-p !w-[calc(var(--p)*2+100%)] opacity-90"
+								orientation="horizontal"
+							/>
+						)}
 						<div className="flex flex-row h-full gap-p">
 							<div className="relative h-full aspect-[9/16]">
 								<Image
@@ -118,7 +125,7 @@ export default function Home() {
 								</p>
 							</div>
 						</div>
-						<div className="relative w-1/3 h-16">
+						<div className="relative w-2/5 h-20">
 							<ResponsiveContainer width="100%" height="100%">
 								<Legend
 									wrapperStyle={{
