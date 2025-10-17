@@ -31,6 +31,7 @@ const secondary = localFont({
 export const metadata: Metadata = {
 	title: 'msgi',
 	robots: { index: false, follow: false },
+	manifest: '/manifest.json',
 };
 
 export const viewport: Viewport = {
