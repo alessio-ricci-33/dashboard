@@ -86,8 +86,6 @@ export default function Home() {
 
 	return (
 		<div className="w-full h-[500px] space-y-4">
-			<h1 className="text-2xl font-semibold">Shorts Analytics</h1>
-
 			<div className="grid auto-rows-fr w-full gap-[calc(var(--p)*2)]">
 				{shorts.map((short, index) => (
 					<div
