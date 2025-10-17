@@ -1,7 +1,7 @@
 export default [
 	{
 		name: 'messaggi.italia',
-		icon: '/projects/messaggi-italia.png',
+		icon: '/projects/messaggi-italia.jpg',
 		description: 'Text storys',
 	},
 	{

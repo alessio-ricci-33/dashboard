@@ -66,7 +66,7 @@ export default function Home() {
 		if (active && payload && payload.length) {
 			const entry = payload[0].payload;
 			return (
-				<div className="bg-background border rounded-lg p-2 shadow-md text-sm">
+				<div className="z-99 bg-background border rounded-lg p-2 shadow-md text-sm">
 					<p className="font-semibold">{entry.date}</p>
 					<p>Ora: {entry.time}</p>
 
@@ -77,6 +77,11 @@ export default function Home() {
 					<p>
 						Likes: {entry.likes >= 0 ? '+' : ''}
 						{entry.likes}
+					</p>
+
+					<p>
+						Comments: {entry.comments >= 0 ? '+' : ''}
+						{entry.comments}
 					</p>
 				</div>
 			);
@@ -166,17 +171,18 @@ export default function Home() {
 											/>
 										))}
 									</Bar>
+
 									<Bar
-										yAxisId="left"
-										dataKey="comments"
-										name="Comments"
-										radius={[4, 4, 0, 0]}
-									/>
-									<Bar
-										yAxisId="left"
 										dataKey="likes"
 										name="Like"
-										fill="#8884d8"
+										fill="#fc365f"
+										radius={[4, 4, 0, 0]}
+									/>
+
+									<Bar
+										dataKey="comments"
+										name="Comments"
+										fill="#3ea6ff"
 										radius={[4, 4, 0, 0]}
 									/>
 								</BarChart>
