@@ -4,21 +4,30 @@ import _try from '@/utils/_try';
 
 export const GET = async (req: Request, { params }: { params: { id: string } }) =>
 	await _try(async () => {
-		const { id: video_id } = await params;
+		const { id: videoId } = await params;
 
-		const short = await Short.findOne({ video_id }).lean();
+		const short = await Short.findOne({ videoId }).lean();
 		if (!short) throw new Error('Short not found.');
 
-		short.views = short.views.filter(v => v.count > 0);
-		short.views.sort((a, b) => a.timestamp - b.timestamp);
+		short.metricsHistory.sort((a, b) => a.timestamp - b.timestamp);
 
-		const diffs = short.views.splice(0, 1);
-		for (const views of short.views) {
+		console.log(short.metricsHistory);
+		if (short.metricsHistory.length < 2) return [];
+
+		const diffs = [];
+		for (let i = 0; i < short.metricsHistory.length - 1; i++) {
+			const metrics = short.metricsHistory[i + 1],
+				prevMetrics = short.metricsHistory[i];
+
 			diffs.push({
-				...views,
-				delta: views.count - diffs[diffs.length - 1].count,
+				timestamp: metrics.timestamp,
+				views: metrics.views - prevMetrics.views,
+				likes: metrics.likes - prevMetrics.likes,
+				favorites: metrics.favorites - prevMetrics.favorites,
+				comments: metrics.comments - prevMetrics.comments,
 			});
 		}
 
+		console.log(diffs);
 		return diffs;
 	});

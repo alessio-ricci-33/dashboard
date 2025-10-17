@@ -1,34 +1,53 @@
+import { SchemaTypes } from 'mongoose';
 import type { WithId } from '@/types/model';
+import type { ConstructToType } from '@/types/utils';
 
-export const Metric = {
+export const Metrics = {
 	timestamp: { type: Number, default: Date.now }, // Date.now → come funzione
-	count: { type: Number, required: true },
+	views: { type: Number, required: true },
+	likes: { type: Number, required: true },
+	favorites: { type: Number, required: true },
+	comments: { type: Number, required: true },
 };
 
-const defaultMetric = () => [
-	{
-		timestamp: Date.now(),
-		count: 0,
-	},
-];
+export type MetricsType = ConstructToType<typeof Metrics>;
 
 export const Short = {
-	video_id: { type: String, required: true },
-	views: {
-		type: [Metric],
-		default: defaultMetric,
-	},
+	videoId: { type: String, required: true, unique: true, index: true },
 
-	likes: {
-		type: [Metric],
-		default: defaultMetric,
-	},
+	// --- Sync / update tracking ---
+	etag: { type: String, required: true },
+	lastSyncedAt: { type: Date, default: () => new Date() }, // ultima chiamata riuscita
+	lastChangedAt: { type: Date, default: null }, // quando l’etag è cambiato
 
-	comments: {
-		type: [Metric],
-		default: defaultMetric,
+	// --- Metrics history ---
+	metricsHistory: { type: [Metrics], default: [] },
+
+	// --- Core metadata (snippet + contentDetails + status) ---
+	metadata: {
+		snippet: {
+			publishedAt: { type: Date, required: true },
+			title: { type: String },
+			description: { type: String },
+			thumbnails: { type: SchemaTypes.Mixed },
+			tags: [String],
+			channelTitle: { type: String },
+			defaultLanguage: { type: String },
+			liveBroadcastContent: { type: String },
+		},
+
+		content: {
+			duration: { type: String },
+			dimension: { type: String },
+			definition: { type: String },
+			caption: { type: String },
+			licensedContent: { type: Boolean },
+			contentRating: { type: SchemaTypes.Mixed },
+		},
 	},
 };
 
+export type ShortType = ConstructToType<typeof Short>;
+export type ShortWithId = WithId<typeof Short>;
+
 export default Short;
-export type Creator = WithId<typeof Short>;

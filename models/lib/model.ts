@@ -2,7 +2,7 @@ import mongodb from './mongodb';
 import { randomUUID as randomUUIDv7 } from 'crypto';
 import { Schema } from 'mongoose';
 
-const s = <T extends object>(obj: T) => new Schema(obj);
+const s = <T extends object>(obj: T) => new Schema(obj, { timestamps: true });
 
 export const Model = async <T extends object>(
 	schema: T,
