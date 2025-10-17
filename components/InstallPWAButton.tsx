@@ -42,7 +42,7 @@ const InstallPWAButton = () => {
 	return (
 		<button
 			onClick={handleInstallClick}
-			style={{ padding: '10px', background: '#000', color: '#fff' }}>
+			className="sticky top-0 z-50 flex items-center justify-center w-full h-12 text-xl">
 			📲 Installa l'app
 		</button>
 	);
