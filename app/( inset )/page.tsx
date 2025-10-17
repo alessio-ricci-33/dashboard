@@ -91,7 +91,7 @@ export default function Home() {
 	};
 
 	return (
-		<div className="flex flex-col gap-p w-full px-p">
+		<div className="flex flex-col gap-[calc(var(--p)*2)] w-full px-p">
 			<h1 className="text-2xl font-semibold">Shorts Analytics</h1>
 			{loading && <div>Loading...</div>}
 			<div className="grid auto-rows-fr w-full gap-[calc(var(--p)*2)]">
