@@ -1,3 +1,4 @@
+'use client';
 // components/InstallPWAButton.tsx
 import { useEffect, useState } from 'react';
 
