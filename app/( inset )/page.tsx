@@ -139,7 +139,10 @@ export default function Home() {
 									data={short.deltas.map(d => ({
 										date: new Date(
 											d.timestamp
-										).toLocaleTimeString('it-IT'),
+										).toLocaleTimeString('it-IT', {
+											month: 'short',
+											weekday: 'narrow',
+										}),
 										hours:
 											new Date(d.timestamp).getHours() +
 											':' +
