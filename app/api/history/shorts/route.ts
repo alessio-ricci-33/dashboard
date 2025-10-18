@@ -6,7 +6,6 @@ export const GET = async (req: Request) =>
 	await _try(async () => {
 		const ids = await Short.find({}).lean();
 
-		console.log(ids);
 		// Ordina per UUID v7 (lexicographically ordinabile)
 		ids.sort(
 			(a, b) =>

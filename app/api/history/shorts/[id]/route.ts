@@ -9,25 +9,25 @@ export const GET = async (req: Request, { params }: { params: { id: string } }) 
 		const short = await Short.findOne({ videoId }).lean();
 		if (!short) throw new Error('Short not found.');
 
-		short.metricsHistory.sort((a, b) => a.timestamp - b.timestamp);
+		short.metricsHistory.sort((a, b) => b.timestamp - a.timestamp);
 
-		console.log(short.metricsHistory);
 		if (short.metricsHistory.length < 2) return [];
 
-		const diffs = [];
+		const deltas = [];
 		for (let i = 0; i < short.metricsHistory.length - 1; i++) {
 			const metrics = short.metricsHistory[i + 1],
 				prevMetrics = short.metricsHistory[i];
 
-			diffs.push({
-				timestamp: metrics.timestamp,
+			const delta = {
 				views: metrics.views - prevMetrics.views,
 				likes: metrics.likes - prevMetrics.likes,
 				favorites: metrics.favorites - prevMetrics.favorites,
 				comments: metrics.comments - prevMetrics.comments,
-			});
+			};
+
+			if (Object.values(delta).some(x => x !== 0))
+				deltas.push({ timestamp: metrics.timestamp, ...delta });
 		}
 
-		console.log(diffs);
-		return diffs;
+		return deltas;
 	});
