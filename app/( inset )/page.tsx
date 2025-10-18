@@ -37,7 +37,6 @@ export default function Home() {
 			.then(res => res.json())
 			.then(res => {
 				setShorts(res.data);
-				console.log(res.data[0]);
 				// if (res.data.length > 0) setSelectedId(res.data[0]);
 			});
 	}, []);
@@ -69,7 +68,7 @@ export default function Home() {
 			return (
 				<div className="z-99 bg-background border rounded-lg p-2 shadow-md text-sm">
 					<p className="font-semibold">{entry.date}</p>
-					<p>Ora: {entry.time}</p>
+					<p className="font-semibold">Ora: {entry.hours}</p>
 
 					<p>
 						Views: {entry.views >= 0 ? '+' : ''}
@@ -138,7 +137,10 @@ export default function Home() {
 
 								<BarChart
 									data={short.deltas.map(d => ({
-										date:
+										date: new Date(
+											d.timestamp
+										).toLocaleTimeString('it-IT'),
+										hours:
 											new Date(d.timestamp).getHours() +
 											':' +
 											new Date(
