@@ -20,13 +20,15 @@ export const GET = async (req: Request) =>
 				const metrics = short.metricsHistory[i + 1],
 					prevMetrics = short.metricsHistory[i];
 
-				deltas.push({
-					timestamp: metrics.timestamp,
+				const delta = {
 					views: metrics.views - prevMetrics.views,
 					likes: metrics.likes - prevMetrics.likes,
 					favorites: metrics.favorites - prevMetrics.favorites,
 					comments: metrics.comments - prevMetrics.comments,
-				});
+				};
+
+				if (Object.values(delta).some(x => x !== 0))
+					deltas.push({ timestamp: metrics.timestamp, ...delta });
 			}
 
 			return { ...short, deltas };
