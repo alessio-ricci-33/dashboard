@@ -12,7 +12,6 @@ export const GET = async (req: Request) =>
 				new Date(a.metadata.snippet.publishedAt).getTime()
 		);
 
-		console.log(ids.slice(0, 3).map(x => x.videoId));
 		return ids.map(short => {
 			const deltas = [];
 			for (let curr = 1, prev = 0; curr <= short.metricsHistory.length - 1; curr++) {

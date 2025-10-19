@@ -66,7 +66,17 @@ export const ShortAnalytic = ({ index, ...short }: ShortType & { index: number }
 								...d,
 							}))}>
 							<XAxis
-								dataKey="date"
+								// custom labels
+								tickFormatter={timestamp => {
+									const date = new Date(timestamp);
+									const day = date.getDate();
+									const month = date.toLocaleString('it-IT', {
+										month: 'short',
+									});
+
+									return `${month} ${day} ${date.getHours()}:${date.getMinutes()}`;
+								}}
+								dataKey="timestamp"
 								tick={{
 									fontSize: '12px',
 								}}
