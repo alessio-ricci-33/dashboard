@@ -18,6 +18,7 @@ const nextConfig: NextConfig = {
 		ignoreBuildErrors: true,
 	},
 	experimental: {
+		dynamicIO: true, // fornisce comportamento runtime dinamico
 		staleTimes: {
 			dynamic: 0,
 		},
