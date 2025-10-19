@@ -124,7 +124,7 @@ const CustomTooltip = ({ active, payload }: any) => {
 		const entry = payload[0].payload;
 		return (
 			<div className="z-99 bg-background border rounded-lg p-2 shadow-md text-sm">
-				<p className="font-semibold">{entry.date}</p>
+				<p className="font-semibold capitalize">{entry.date}</p>
 				<p className="font-semibold">Ora: {entry.hours}</p>
 
 				<p>
