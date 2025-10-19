@@ -65,9 +65,9 @@ export const ShortAnalytic = (short: ShortType) => {
 
 					<BarChart
 						data={short.deltas.map(d => ({
-							date: new Date(d.timestamp).toLocaleTimeString('it-IT', {
+							date: new Date(d.timestamp).toLocaleDateString('it-IT', {
 								month: 'short',
-								weekday: 'narrow',
+								weekday: 'long',
 							}),
 							hours:
 								new Date(d.timestamp).getHours() +
