@@ -43,7 +43,7 @@ export const ShortAnalytic = ({ index, ...short }: ShortType & { index: number }
 			</div>
 			<div
 				data-showchart={showChart}
-				className="relative w-2/5 h-20 data-[showchart=true]:opacity-100 data-[showchart=false]:opacity-0 [transition-timing-function:cubic-bezier(0.4,0,.2,.4,1)] duration-850">
+				className="relative w-2/5 h-20 data-[showchart=true]:opacity-100 data-[showchart=false]:opacity-0 [transition-timing-function:cubic-bezier(0.4,0,.2,.4,1)] delay-65 duration-850">
 				{showChart && (
 					<ResponsiveContainer width="100%" height="100%">
 						<Legend
