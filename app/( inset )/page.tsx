@@ -3,6 +3,9 @@ import { ShortType } from '@/models/schema/analytics/short';
 import { Separator } from '@/ui/separator';
 import apiFetch, { ApiRes } from '@/utils/api-fetch';
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export const api = {
 	shorts: async () => {
 		const { success, ...rest }: ApiRes<ShortType[]> = await apiFetch('/history/shorts', {
