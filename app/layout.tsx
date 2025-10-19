@@ -49,12 +49,13 @@ export default function RootLayout({ sidebar, children: inset }: Layouts) {
 			lang="it"
 			className={`${logo.variable} ${secondary.variable} antialiased`}
 			data-theme="dark">
-			<InstallPWAButton />
 			<ThemeProvider defaultValue="dark">
 				<GlobalProvider>
 					<body className="antialiased">
 						<div id="content">
 							<div id="entry">
+								<InstallPWAButton />
+
 								<header className="shrink-0 flex flex-row items-center justify-between h-clamp-8 w-full gap-p pr-p">
 									<span className="flex flex-row items-center w-(--sidebar-width) h-full gap-1.5">
 										<Link

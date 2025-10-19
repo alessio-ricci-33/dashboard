@@ -1,9 +1,9 @@
+import mongoose from 'mongoose';
 import { env } from 'process';
-import { connect } from 'mongoose';
 
 export const newConn = async (uri: string, dbName?: string) => {
-	const newConn = mongoose.createConnection(uri, { dbName });
-	return await newConn.asPromise(); // Aspetta connessione
+	const conn = mongoose.createConnection(uri, { dbName });
+	return await conn.asPromise();
 };
 
 export default async ({
@@ -15,8 +15,8 @@ export default async ({
 	uri?: string;
 	forceNew?: boolean;
 } = {}) => {
-	if (!('mongoose' in globalThis)) {
-		globalThis.mongoose = await connect(uri, {
+	if (!(globalThis as any)._mongoose) {
+		(globalThis as any)._mongoose = await mongoose.connect(uri, {
 			bufferCommands: false,
 		});
 	}
@@ -26,11 +26,11 @@ export default async ({
 	const connections = mongoose.connections.filter(conn => conn.name === name);
 	if (!connections.length) return await newConn(uri, name);
 
-	await Promise.all(
-		connections.map(async ({ readyState, close }) => {
-			if ([0, 3, 99].some(state => state === readyState)) return await close();
-		})
-	);
+	for (const conn of connections) {
+		if ([0, 3, 99].includes(conn.readyState)) {
+			await conn.close();
+		}
+	}
 
 	return (
 		mongoose.connections.find(conn => conn.name === name && conn.readyState === 1) ??
@@ -38,8 +38,7 @@ export default async ({
 	);
 };
 
-// On signal exit, close all connections
 process.on('SIGINT', async () => {
-	await Promise.all(mongoose.connections.map(async conn => await conn.close()));
+	await Promise.all(mongoose.connections.map(async conn => conn.close()));
 	process.exit(0);
 });
