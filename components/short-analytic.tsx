@@ -74,7 +74,7 @@ export const ShortAnalytic = ({ index, ...short }: ShortType & { index: number }
 										month: 'short',
 									});
 
-									return `${month} ${day} ${date.getHours()}:${date.getMinutes()}`;
+									return `${month} ${day} · ${date.getHours()}:${date.getMinutes()}`;
 								}}
 								dataKey="timestamp"
 								tick={{
