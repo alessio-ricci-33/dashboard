@@ -3,39 +3,24 @@
 import { ShortType } from '@/models/schema/analytics/short';
 import { Separator } from '@/ui/separator';
 import Image from 'next/image';
+import { useEffect, useState } from 'react';
 
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend, Cell } from 'recharts';
 
-export const ShortAnalytic = (short: ShortType) => {
-	const CustomTooltip = ({ active, payload }: any) => {
-		if (active && payload && payload.length) {
-			const entry = payload[0].payload;
-			return (
-				<div className="z-99 bg-background border rounded-lg p-2 shadow-md text-sm">
-					<p className="font-semibold">{entry.date}</p>
-					<p className="font-semibold">Ora: {entry.hours}</p>
+export const ShortAnalytic = ({ index, ...short }: ShortType & { index: number }) => {
+	const [reveal, setReveal] = useState(false);
 
-					<p>
-						Views: {entry.views >= 0 ? '+' : ''}
-						{entry.views}
-					</p>
-					<p>
-						Likes: {entry.likes >= 0 ? '+' : ''}
-						{entry.likes}
-					</p>
+	useEffect(() => {
+		if (index <= 0) setReveal(true);
 
-					<p>
-						Comments: {entry.comments >= 0 ? '+' : ''}
-						{entry.comments}
-					</p>
-				</div>
-			);
-		}
-		return null;
-	};
-
+		setTimeout(() => {
+			setReveal(true);
+		}, Math.min(index * 100, 10000));
+	}, [index]);
 	return (
-		<div className="flex flex-row justify-between items-start size-full">
+		<div
+			data-reveal={reveal}
+			className="data-[reveal=true]:opacity-100 data-[reveal=false]:opacity-0 duration-1000 transition-opacity flex flex-row justify-between items-start size-full">
 			<div className="flex flex-row h-full gap-p">
 				<div className="relative h-full aspect-[9/16]">
 					<Image
@@ -53,71 +38,109 @@ export const ShortAnalytic = (short: ShortType) => {
 				</div>
 			</div>
 			<div className="relative w-2/5 h-20">
-				<ResponsiveContainer width="100%" height="100%">
-					<Legend
-						wrapperStyle={{
-							height: 20, // Altezza totale della legenda (in px)
-							fontSize: '12px', // Dimensione del testo
-							lineHeight: '1em', // Altezza linea
-							overflow: 'hidden', // Se vuoi troncare gli overflow
-						}}
-					/>
-
-					<BarChart
-						data={short.deltas.map(d => ({
-							date: new Date(d.timestamp).toLocaleDateString('it-IT', {
-								month: 'short',
-								weekday: 'long',
-							}),
-							hours:
-								new Date(d.timestamp).getHours() +
-								':' +
-								new Date(d.timestamp).getMinutes(),
-							...d,
-						}))}>
-						<XAxis
-							dataKey="date"
-							tick={{
-								fontSize: '12px',
+				{reveal && (
+					<ResponsiveContainer width="100%" height="100%">
+						<Legend
+							wrapperStyle={{
+								height: 20, // Altezza totale della legenda (in px)
+								fontSize: '12px', // Dimensione del testo
+								lineHeight: '1em', // Altezza linea
+								overflow: 'hidden', // Se vuoi troncare gli overflow
 							}}
-							height={12}
 						/>
 
-						<YAxis yAxisId="left" orientation="left" stroke="#82ca9d" />
+						<BarChart
+							data={short.deltas.map(d => ({
+								date: new Date(d.timestamp).toLocaleDateString(
+									'it-IT',
+									{
+										month: 'short',
+										weekday: 'long',
+									}
+								),
+								hours:
+									new Date(d.timestamp).getHours() +
+									':' +
+									new Date(d.timestamp).getMinutes(),
+								...d,
+							}))}>
+							<XAxis
+								dataKey="date"
+								tick={{
+									fontSize: '12px',
+								}}
+								height={12}
+							/>
 
-						<Tooltip content={<CustomTooltip />} />
+							<YAxis
+								yAxisId="left"
+								orientation="left"
+								stroke="#82ca9d"
+							/>
 
-						<Bar
-							yAxisId="left"
-							dataKey="views"
-							name="Δ Rispetto Barra Precedente"
-							radius={[4, 4, 0, 0]}>
-							{short.deltas.map((entry, index) => (
-								<Cell
-									key={`cell-${index}`}
-									fill={
-										entry.views >= 0 ? '#82ca9d' : '#f87171'
-									} // Verde o Rosso
-								/>
-							))}
-						</Bar>
+							<Tooltip content={<CustomTooltip />} />
 
-						<Bar
-							dataKey="likes"
-							name="Like"
-							fill="#fc365f"
-							radius={[4, 4, 0, 0]}
-						/>
+							<Bar
+								yAxisId="left"
+								dataKey="views"
+								name="Δ Rispetto Barra Precedente"
+								radius={[4, 4, 0, 0]}>
+								{short.deltas.map((entry, index) => (
+									<Cell
+										key={`cell-${index}`}
+										fill={
+											entry.views >= 0
+												? '#82ca9d'
+												: '#f87171'
+										} // Verde o Rosso
+									/>
+								))}
+							</Bar>
 
-						<Bar
-							dataKey="comments"
-							name="Comments"
-							fill="#3ea6ff"
-							radius={[4, 4, 0, 0]}
-						/>
-					</BarChart>
-				</ResponsiveContainer>
+							<Bar
+								dataKey="likes"
+								name="Like"
+								fill="#fc365f"
+								radius={[4, 4, 0, 0]}
+							/>
+
+							<Bar
+								dataKey="comments"
+								name="Comments"
+								fill="#3ea6ff"
+								radius={[4, 4, 0, 0]}
+							/>
+						</BarChart>
+					</ResponsiveContainer>
+				)}
 			</div>
 		</div>
 	);
+};
+
+const CustomTooltip = ({ active, payload }: any) => {
+	if (active && payload && payload.length) {
+		const entry = payload[0].payload;
+		return (
+			<div className="z-99 bg-background border rounded-lg p-2 shadow-md text-sm">
+				<p className="font-semibold">{entry.date}</p>
+				<p className="font-semibold">Ora: {entry.hours}</p>
+
+				<p>
+					Views: {entry.views >= 0 ? '+' : ''}
+					{entry.views}
+				</p>
+				<p>
+					Likes: {entry.likes >= 0 ? '+' : ''}
+					{entry.likes}
+				</p>
+
+				<p>
+					Comments: {entry.comments >= 0 ? '+' : ''}
+					{entry.comments}
+				</p>
+			</div>
+		);
+	}
+	return null;
 };

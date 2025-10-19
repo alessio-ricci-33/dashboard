@@ -30,7 +30,7 @@ export default async () => {
 								orientation="horizontal"
 							/>
 						)}
-						<ShortAnalytic key={index} {...short} />
+						<ShortAnalytic key={index} index={index} {...short} />
 					</div>
 				))}
 			</div>
