@@ -8,20 +8,24 @@ import { useEffect, useState } from 'react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend, Cell } from 'recharts';
 
 export const ShortAnalytic = ({ index, ...short }: ShortType & { index: number }) => {
-	const [reveal, setReveal] = useState(false);
+	const [reveal, setReveal] = useState(false),
+		[showChart, setShowChart] = useState(false);
 
 	useEffect(() => {
 		if (index <= 0) setReveal(true);
 
 		setTimeout(() => {
 			setReveal(true);
+			setTimeout(() => {
+				setShowChart(true);
+			}, 265);
 		}, Math.min(index * 200, 10000));
 	}, [index]);
 
 	return (
 		<div
 			data-reveal={reveal}
-			className="data-[reveal=true]:opacity-100 data-[reveal=false]:opacity-0 [transition-timing-function:cubic-bezier(0.4,0,.2,.4,1)] duration-400 transition-opacity flex flex-row justify-between items-start size-full">
+			className="data-[reveal=true]:opacity-100 data-[reveal=false]:opacity-0 [transition-timing-function:cubic-bezier(0.4,0,.2,.4,1)] duration-650 transition-opacity flex flex-row justify-between items-start size-full">
 			<div className="flex flex-row h-full gap-p">
 				<div className="relative h-full aspect-[9/16]">
 					<Image
@@ -38,8 +42,10 @@ export const ShortAnalytic = ({ index, ...short }: ShortType & { index: number }
 					</p>
 				</div>
 			</div>
-			<div className="relative w-2/5 h-20">
-				{reveal && (
+			<div
+				data-showchart={showChart}
+				className="relative w-2/5 h-20 data-[showchart=true]:opacity-100 data-[showchart=false]:opacity-0 [transition-timing-function:cubic-bezier(0.4,0,.2,.4,1)] delay-300 duration-650">
+				{showChart && (
 					<ResponsiveContainer width="100%" height="100%">
 						<Legend
 							wrapperStyle={{
