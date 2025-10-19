@@ -43,6 +43,9 @@ export const viewport: Viewport = {
 	themeColor: '#000',
 };
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export default function RootLayout({ sidebar, children: inset }: Layouts) {
 	return (
 		<html

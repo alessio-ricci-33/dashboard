@@ -22,7 +22,7 @@ export default async () => {
 			<h1 className="text-2xl font-semibold leading-none">Shorts Analytics</h1>
 
 			<div className="grid auto-rows-fr w-full gap-[calc(var(--p)*2)]">
-				{shorts.slice(0, 5).map((short, index) => (
+				{shorts.map((short, index) => (
 					<div className="relative size-full">
 						{index > 0 && (
 							<Separator
