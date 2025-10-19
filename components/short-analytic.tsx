@@ -1,11 +1,10 @@
 'use client';
 
-import { ShortType } from '@/models/schema/analytics/short';
-import { Separator } from '@/ui/separator';
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
-
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend, Cell } from 'recharts';
+
+import type { ShortType } from '@/models/schema/analytics/short';
 
 export const ShortAnalytic = ({ index, ...short }: ShortType & { index: number }) => {
 	const [reveal, setReveal] = useState(false),
@@ -19,7 +18,7 @@ export const ShortAnalytic = ({ index, ...short }: ShortType & { index: number }
 			setTimeout(() => {
 				setShowChart(true);
 			}, 500);
-		}, Math.min(index * 200, 10000));
+		}, index * 200);
 	}, [index]);
 
 	return (
