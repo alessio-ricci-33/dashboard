@@ -18,7 +18,7 @@ export const ShortAnalytic = ({ index, ...short }: ShortType & { index: number }
 			setReveal(true);
 			setTimeout(() => {
 				setShowChart(true);
-			}, 265);
+			}, 500);
 		}, Math.min(index * 200, 10000));
 	}, [index]);
 
