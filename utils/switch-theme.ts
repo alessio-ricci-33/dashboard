@@ -24,7 +24,7 @@ export default (invert = true) => {
 			break;
 		}
 		default:
-			light();
+			dark();
 	}
 
 	return localStorage.theme;
