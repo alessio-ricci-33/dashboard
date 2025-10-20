@@ -8,6 +8,7 @@ export const revalidate = 0;
 
 export const api = {
 	shorts: async () => {
+		'use server';
 		const { success, ...rest }: ApiRes<ShortType[]> = await apiFetch('/history/shorts', {
 			method: 'GET',
 		});
@@ -17,26 +18,30 @@ export const api = {
 	},
 };
 
-export default async () => {
-	const shorts = await api.shorts();
-
+export default () => {
 	return (
 		<div className="flex flex-col gap-[calc(var(--p)*2)] w-full px-p">
 			<h1 className="text-2xl font-semibold leading-none">Shorts Analytics</h1>
+			<Shorts />
+		</div>
+	);
+};
 
-			<div className="grid auto-rows-fr w-full gap-[calc(var(--p)*2)]">
-				{shorts.slice(0, 50).map((short, index) => (
-					<div className="relative size-full">
-						{index > 0 && (
-							<Separator
-								className="absolute -top-p -left-p !w-[calc(var(--p)*2+100%)] opacity-90"
-								orientation="horizontal"
-							/>
-						)}
-						<ShortAnalytic key={index} index={index} {...short} />
-					</div>
-				))}
-			</div>
+const Shorts = async () => {
+	const shorts = await api.shorts();
+	return (
+		<div className="grid auto-rows-fr w-full gap-[calc(var(--p)*2)]">
+			{(shorts ?? []).slice(0, 50).map((short, index) => (
+				<div className="relative size-full">
+					{index > 0 && (
+						<Separator
+							className="absolute -top-p -left-p !w-[calc(var(--p)*2+100%)] opacity-90"
+							orientation="horizontal"
+						/>
+					)}
+					<ShortAnalytic key={index} index={index} {...short} />
+				</div>
+			))}
 		</div>
 	);
 };
