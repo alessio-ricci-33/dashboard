@@ -1,7 +1,7 @@
 'use client';
 // hooks/usePersistentState.ts
 import { useEffect, useState } from 'react';
-import { storage, indexedDBStore, isBrowser } from './storageUtils';
+import { storage, indexedDBStore, isBrowser } from '../utils/storage';
 
 type StorageType = 'local' | 'session';
 
@@ -10,14 +10,18 @@ export function usePersistentState<T>(
 	initialValue: T,
 	type: StorageType
 ): [T, React.Dispatch<React.SetStateAction<T>>] {
-	const [state, setState] = useState<T>(initialValue);
+	const [state, setState] = useState<T>(
+		!isBrowser ? null : storage.get(key, type) ?? initialValue
+	);
 
 	useEffect(() => {
+		if (!isBrowser) return;
 		if (storage.has(key, type)) return;
 		setState(initialValue);
-	}, [initialValue]);
+	}, [initialValue, isBrowser]);
 
 	useEffect(() => {
+		if (!isBrowser) return;
 		if (storage.has(key, type)) return setState(storage.get(key, type)!);
 
 		storage.set(key, state, type);

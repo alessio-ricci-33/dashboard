@@ -7,8 +7,7 @@ import { SidebarProvider } from '@/ui/sidebar';
 import { Toaster } from '@/ui/sonner';
 
 import type { Metadata, Viewport } from 'next';
-import { Separator } from '@/ui/separator';
-import BreadCrumbNav from '@/components/BreadCrumbNav';
+import { AuthProvider } from '@/hooks/use-auth';
 import ThemeSwitcher from '@/components/theme-switcher';
 import Image from 'next/image';
 import { Dialog } from '@/ui/dialog';
@@ -55,47 +54,48 @@ export default function RootLayout({ sidebar, children: inset }: Layouts) {
 						<div id="content">
 							<div id="entry">
 								<InstallPWAButton />
-
-								<header className="shrink-0 flex flex-row items-center justify-between h-clamp-8 w-full gap-p pr-p">
-									<span className="flex flex-row items-center w-(--sidebar-width) h-full gap-1.5">
-										<Link
-											href={'/'}
-											className="relative shrink-0 !w-clamp-10 aspect-square -ml-0.5">
-											<Image
+								<AuthProvider>
+									<header className="shrink-0 flex flex-row items-center justify-between h-clamp-8 w-full gap-p pr-p">
+										<span className="flex flex-row items-center w-(--sidebar-width) h-full gap-1.5">
+											<Link
+												href={'/'}
+												className="relative shrink-0 !w-clamp-10 aspect-square -ml-0.5">
+												<Image
+													style={{
+														WebkitBoxReflect:
+															'below -21% linear-gradient(transparent 45%, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.6) )',
+													}}
+													className="!w-full !h-auto object-contain py-0.5"
+													src={'/favicon.ico'}
+													alt="Acme Logo"
+													fill
+												/>
+											</Link>
+											<span
+												className="text-lg font-bold text-zinc-700"
 												style={{
 													WebkitBoxReflect:
-														'below -21% linear-gradient(transparent 45%, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.6) )',
-												}}
-												className="!w-full !h-auto object-contain py-0.5"
-												src={'/favicon.ico'}
-												alt="Acme Logo"
-												fill
+														'below -30% linear-gradient(transparent 31%, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.6) )',
+												}}>
+												/
+											</span>
+											<EnvSwitcher
+												className="shrink !bg-transparent !pl-1"
+												envs={envs}
 											/>
-										</Link>
-										<span
-											className="text-lg font-bold text-zinc-700"
-											style={{
-												WebkitBoxReflect:
-													'below -30% linear-gradient(transparent 31%, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.6) )',
-											}}>
-											/
 										</span>
-										<EnvSwitcher
-											className="shrink !bg-transparent !pl-1"
-											envs={envs}
-										/>
-									</span>
 
-									<ThemeSwitcher className="ml-auto" />
-								</header>
-								<div className="contents">
-									<Dialog>
-										<SidebarProvider className="relative flex flex-row size-full gap-p bg-transparent">
-											{sidebar}
-											{inset}
-										</SidebarProvider>
-									</Dialog>
-								</div>
+										<ThemeSwitcher className="ml-auto" />
+									</header>
+									<div className="contents">
+										<Dialog>
+											<SidebarProvider className="relative flex flex-row size-full gap-p bg-transparent">
+												{sidebar}
+												{inset}
+											</SidebarProvider>
+										</Dialog>
+									</div>
+								</AuthProvider>
 							</div>
 						</div>
 						<Toaster />
