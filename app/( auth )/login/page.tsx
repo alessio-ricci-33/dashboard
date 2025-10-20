@@ -19,6 +19,7 @@ export default function LoginPage() {
 
 	if (isAuthenticated) {
 		router.replace('/');
+		router.refresh();
 		return null;
 	}
 
@@ -39,6 +40,7 @@ export default function LoginPage() {
 
 			await login(username, password);
 			router.replace('/');
+			router.refresh();
 		} catch (err: any) {
 			setError(err.message || 'Errore di autenticazione');
 		} finally {

@@ -3,6 +3,8 @@
 
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { storage, indexedDBStore } from '@/utils/storage';
+import { usePersistentState } from './usePersistentState';
+import { useRouter } from 'next/navigation';
 
 interface AuthContextType {
 	user: any | null;
@@ -15,8 +17,13 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | null>(null);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-	const [user, setUser] = useState<any | null>(null);
+	const router = useRouter();
 	const [loading, setLoading] = useState(true);
+	const [user, setUser] = usePersistentState('user', null, 'local');
+
+	useEffect(() => {
+		if (user) router.replace('/');
+	}, [user]);
 
 	useEffect(() => {
 		const initAuth = async () => {
