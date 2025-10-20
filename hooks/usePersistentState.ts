@@ -11,7 +11,7 @@ export function usePersistentState<T>(
 	type: StorageType
 ): [T, React.Dispatch<React.SetStateAction<T>>] {
 	const [state, setState] = useState<T>(
-		!isBrowser ? null : storage.get(key, type) ?? initialValue
+		!isBrowser ? initialValue : storage.get(key, type) ?? initialValue
 	);
 
 	useEffect(() => {

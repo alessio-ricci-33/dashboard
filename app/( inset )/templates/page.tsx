@@ -1,9 +1,6 @@
 'use client';
 
 import { Separator } from '@/ui/separator';
-import { Dialog, DialogContent, DialogTrigger } from '@/ui/dialog';
-import { Button } from '@/ui/button';
-import { Input } from '@/ui/input';
 
 import templates from './_templates/_export';
 
