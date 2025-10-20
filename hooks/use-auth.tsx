@@ -22,7 +22,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 	const [user, setUser] = usePersistentState('user', null, 'local');
 
 	useEffect(() => {
-		if (user) router.replace('/');
+		if (user) {
+			router.replace('/');
+			router.refresh();
+		}
 	}, [user]);
 
 	useEffect(() => {
