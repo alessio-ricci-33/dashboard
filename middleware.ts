@@ -23,5 +23,9 @@ export function middleware(req: NextRequest) {
 
 export const config = {
 	// Esclude API, file statici e asset
-	matcher: ['/((?!api|_next|static|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)'],
+	matcher: [
+		'/((?!api|_next|static|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+		// also the manifest.json
+		'/manifest.json',
+	],
 };
