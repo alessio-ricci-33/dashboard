@@ -21,11 +21,9 @@ export function middleware(req: NextRequest) {
 	return NextResponse.next();
 }
 
+// ✅ Esclusioni corrette per API, asset, PWA e immagini
 export const config = {
-	// Esclude API, file statici e asset
 	matcher: [
-		'/((?!api|_next|static|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
-		// also the manifest.json
-		'/manifest.json',
+		'/((?!api|_next|static|manifest\\.json|service-worker\\.js|sw\\.js|workbox-.*\\.js|favicon\\.ico|robots\\.txt|sitemap\\.xml|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)',
 	],
 };
