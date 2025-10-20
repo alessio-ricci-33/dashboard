@@ -1,5 +1,5 @@
 'use client';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Input } from '@/ui/input';
 import { Button } from '@/ui/button';
 
@@ -10,7 +10,11 @@ export const ImageLoader = ({
 	onFileChange?: (file: File | null) => void;
 }) => {
 	const fileInput = useRef<HTMLInputElement>(null);
-	const [preview, setPreview] = useState<string | null>(null);
+	const [preview, setPreview] = useState<string | null>(props.value ?? null);
+
+	useEffect(() => {
+		setPreview(props.value ?? null);
+	}, [props.value]);
 
 	const handleFileChange = () => {
 		const file = fileInput.current?.files?.[0];

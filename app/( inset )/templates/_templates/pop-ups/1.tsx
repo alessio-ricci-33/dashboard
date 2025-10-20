@@ -17,6 +17,9 @@ import { cn } from '@/utils/shadcn';
 import { useSpring as $, animated } from '@react-spring/konva';
 import { useFrameCapture } from '@/hooks/use-frame-capture';
 import { ParamsToProps } from '@/types/utils';
+import { usePersistentState } from '@/hooks/usePersistentState';
+
+export const _id = 'popup-fat';
 
 export const params = {
 	brandName: {
@@ -531,14 +534,16 @@ export const Video = (
 };
 
 export const component = () => {
-	const [tab, setTab] = useState('image'),
+	const [tab, setTab] = usePersistentState(`TAB-${_id}`, 'video', 'local'),
 		[dialogOpen, setDialogOpen] = useState(false),
 		[toDownload, setToDownload] = useState(false),
 		{ isRecording, setIsRecording } = useGlobalContext();
 
-	const [props, setProps] = useState(tab === 'image' ? defaultProps : defaultDynamicProps);
-
-	useEffect(() => setProps(tab === 'image' ? defaultProps : defaultDynamicProps), [tab]);
+	const [props, setProps] = usePersistentState(
+		`PROPS-${_id}-${tab}`,
+		tab === 'image' ? defaultProps : defaultDynamicProps,
+		'local'
+	);
 
 	return (
 		<Dialog
@@ -620,9 +625,7 @@ export const component = () => {
 																	.value,
 												});
 											}}
-											defaultValue={
-												props[label] ?? defaultValue
-											}
+											value={props[key] ?? defaultValue}
 											{...inputProps}
 										/>
 									</span>
@@ -698,9 +701,7 @@ export const component = () => {
 																	.value,
 												});
 											}}
-											defaultValue={
-												props[label] ?? defaultValue
-											}
+											value={props[key] ?? defaultValue}
 											{...inputProps}
 										/>
 									</span>

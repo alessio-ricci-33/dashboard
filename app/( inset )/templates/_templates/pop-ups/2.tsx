@@ -14,6 +14,9 @@ import { useFrameCapture } from '@/hooks/use-frame-capture';
 
 import { useSpring as $, animated } from '@react-spring/konva';
 import { useGlobalContext } from '@/hooks/global-context';
+import { usePersistentState } from '@/hooks/usePersistentState';
+
+export const _id = 'popup-island';
 
 export const params = {
 	brandName: {
@@ -165,7 +168,7 @@ export const Image = (
 
 	return (
 		<DownloadableCanvas
-			filename="popup-island"
+			filename={_id}
 			download={props.download}
 			onDownload={props.onDownload}
 			width={width + PADDING * 2}
@@ -308,7 +311,7 @@ export const Video = (
 				const url = window.URL.createObjectURL(blob);
 				const a = document.createElement('a');
 				a.href = url;
-				a.download = 'popup-island.mov';
+				a.download = `${_id}.mov`;
 				document.body.appendChild(a);
 				a.click();
 				a.remove();
@@ -476,14 +479,16 @@ export const Video = (
 };
 
 export const component = () => {
-	const [tab, setTab] = useState('image'),
+	const [tab, setTab] = usePersistentState(`TAB-${_id}`, 'video', 'local'),
 		[dialogOpen, setDialogOpen] = useState(false),
 		[toDownload, setToDownload] = useState(false),
 		{ isRecording, setIsRecording } = useGlobalContext();
 
-	const [props, setProps] = useState(tab === 'image' ? defaultProps : defaultDynamicProps);
-
-	useEffect(() => setProps(tab === 'image' ? defaultProps : defaultDynamicProps), [tab]);
+	const [props, setProps] = usePersistentState(
+		`PROPS-${_id}-${tab}`,
+		tab === 'image' ? defaultProps : defaultDynamicProps,
+		'local'
+	);
 
 	return (
 		<Dialog
@@ -565,9 +570,7 @@ export const component = () => {
 																	.value,
 												});
 											}}
-											defaultValue={
-												props[label] ?? defaultValue
-											}
+											value={props[key] ?? defaultValue}
 											{...inputProps}
 										/>
 									</span>
@@ -643,9 +646,7 @@ export const component = () => {
 																	.value,
 												});
 											}}
-											defaultValue={
-												props[label] ?? defaultValue
-											}
+											value={props[key] ?? defaultValue}
 											{...inputProps}
 										/>
 									</span>
