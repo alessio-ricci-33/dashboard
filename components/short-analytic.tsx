@@ -6,7 +6,11 @@ import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend, Cell
 
 import type { ShortType } from '@/models/schema/analytics/short';
 
-export const ShortAnalytic = ({ index, ...short }: ShortType & { index: number }) => {
+export const ShortAnalytic = ({
+	index,
+	visibleKeys = ['views', 'likes', 'comments'],
+	...short
+}: ShortType & { index: number; visibleKeys: string[] }) => {
 	const [reveal, setReveal] = useState(false),
 		[showChart, setShowChart] = useState(false);
 
@@ -89,43 +93,57 @@ export const ShortAnalytic = ({ index, ...short }: ShortType & { index: number }
 							/>
 
 							<YAxis
-								yAxisId="left"
+								yAxisId={
+									visibleKeys.includes('views')
+										? 'views'
+										: visibleKeys.includes('likes')
+										? 'likes'
+										: 'comments'
+								}
 								orientation="left"
 								stroke="#82ca9d"
 							/>
 
 							<Tooltip content={<CustomTooltip />} />
 
-							<Bar
-								yAxisId="left"
-								dataKey="views"
-								name="Δ Rispetto Barra Precedente"
-								radius={[4, 4, 0, 0]}>
-								{short.deltas.map((entry, index) => (
-									<Cell
-										key={`cell-${index}`}
-										fill={
-											entry.views >= 0
-												? '#82ca9d'
-												: '#f87171'
-										} // Verde o Rosso
-									/>
-								))}
-							</Bar>
+							{visibleKeys.includes('comments') && (
+								<Bar
+									yAxisId="comments"
+									dataKey="comments"
+									name="Comments"
+									fill="#3ea6ff"
+									radius={[4, 4, 0, 0]}
+								/>
+							)}
 
-							<Bar
-								dataKey="likes"
-								name="Like"
-								fill="#fc365f"
-								radius={[4, 4, 0, 0]}
-							/>
+							{visibleKeys.includes('likes') && (
+								<Bar
+									yAxisId="likes"
+									dataKey="likes"
+									name="Like"
+									fill="#fc365f"
+									radius={[4, 4, 0, 0]}
+								/>
+							)}
 
-							<Bar
-								dataKey="comments"
-								name="Comments"
-								fill="#3ea6ff"
-								radius={[4, 4, 0, 0]}
-							/>
+							{visibleKeys.includes('views') && (
+								<Bar
+									yAxisId="views"
+									dataKey="views"
+									name="Δ Rispetto Barra Precedente"
+									radius={[4, 4, 0, 0]}>
+									{short.deltas.map((entry, index) => (
+										<Cell
+											key={`cell-${index}`}
+											fill={
+												entry.views >= 0
+													? '#82ca9d'
+													: '#f87171'
+											} // Verde o Rosso
+										/>
+									))}
+								</Bar>
+							)}
 						</BarChart>
 					</ResponsiveContainer>
 				)}
