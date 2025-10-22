@@ -53,7 +53,7 @@ export default () => {
 						<Label
 							key={index + 'label'}
 							className={cn(
-								'flex flex-row gap-2 py-1.25 pl-1.5 pr-3 rounded-xl opacity-85 has-[[data-state=checked]]:opacity-100',
+								'flex flex-row items-center gap-2 py-1.25 pl-1.5 pr-3 rounded-xl opacity-85 has-[[data-state=checked]]:opacity-100 font-secondary text-xs leading-none tracking-wide select-none',
 								className
 							)}>
 							<Checkbox
