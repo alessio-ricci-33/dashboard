@@ -315,7 +315,7 @@ export const Video = (
 	useEffect(() => {
 		setTimeout(() => {
 			setToFadeIn(true);
-		}, 350);
+		}, 165);
 	}, [props]);
 
 	useFrameCapture(stageRef, isRecording, {

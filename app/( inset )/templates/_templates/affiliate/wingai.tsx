@@ -480,9 +480,9 @@ export const Video = (props = defaultDynamicProps as DynamicProps) => {
 		setTimeout(async () => {
 			setToFadeIn(true);
 
-			await new Promise(r => setTimeout(r, 650));
+			await new Promise(r => setTimeout(r, animation.fadeIn + animation.freeze * 0.33));
 			setToShowAnswer(true);
-		}, 1000);
+		}, 165);
 	}, [props]);
 
 	useFrameCapture(stageRef, isRecording, {
@@ -563,7 +563,9 @@ export const Video = (props = defaultDynamicProps as DynamicProps) => {
 
 					onRest: async () => {
 						if (toFadeIn) {
-							await new Promise(r => setTimeout(r, 3000));
+							await new Promise(r =>
+								setTimeout(r, animation.freeze + animation.fadeIn)
+							);
 							setToFadeIn(false);
 						}
 
