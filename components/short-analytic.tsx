@@ -101,7 +101,13 @@ export const ShortAnalytic = ({
 										: 'comments'
 								}
 								orientation="left"
-								stroke="#82ca9d"
+								stroke={
+									visibleKeys.includes('views')
+										? '#82ca9d'
+										: visibleKeys.includes('likes')
+										? '#fc365f'
+										: '#3ea6ff'
+								}
 							/>
 
 							<Tooltip content={<CustomTooltip />} />
