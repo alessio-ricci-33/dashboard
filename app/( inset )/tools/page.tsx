@@ -8,22 +8,24 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { FiCopy } from 'react-icons/fi';
 import { toast } from 'sonner';
 import { shortsTitles } from '@/constants/system-instructions';
+import { usePersistentState } from '@/hooks/usePersistentState';
 
 export default function Page() {
 	const [prompt, setPrompt] = useState('');
 	const [systemInstruction, setSystemInstruction] = useState(shortsTitles);
-	const [model, setModel] = useState<
-		| 'gemini-2.0-flash'
-		| 'gemini-2.5-flash'
-		| 'gemini-2.5-pro'
-		| 'gemini-2.5-flash-lite-preview-06-17'
-	>('gemini-2.0-flash');
+	const [model, setModel] = usePersistentState<
+		'gemini-2.5-flash' | 'gemini-2.5-pro' | 'gemini-2.5-flash-lite-preview-06-17'
+	>('tools-model', 'gemini-2.5-flash', 'local');
 	const [loading, setLoading] = useState(false);
-	const [results, setResults] = useState<{ [key: string]: string }>({
-		tiktok: '',
-		youtube: '',
-		instagram: '',
-	});
+	const [results, setResults] = usePersistentState<{ [key: string]: string }>(
+		'titles-platforms',
+		{
+			tiktok: '',
+			youtube: '',
+			instagram: '',
+		},
+		'local'
+	);
 
 	const handleGenerate = async () => {
 		if (!prompt.trim()) return;
