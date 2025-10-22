@@ -12,9 +12,9 @@ export default () => {
 	const [shorts, setShorts] = useState([]),
 		[keys, setKeys] = useState(['views', 'likes', 'comments']);
 
-	// useEffect(() => {
-	// 	getAll().then(setShorts);
-	// }, []);
+	useEffect(() => {
+		getAll().then(setShorts);
+	}, []);
 
 	return (
 		<div className="flex flex-col gap-[calc(var(--p)*2)] w-full px-p">
