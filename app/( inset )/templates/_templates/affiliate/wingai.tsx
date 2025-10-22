@@ -45,7 +45,7 @@ export const params = {
 	height: {
 		type: Number,
 		label: 'Height',
-		default: 500,
+		default: 495,
 		props: {
 			className: 'col-span-3',
 		},
@@ -53,7 +53,7 @@ export const params = {
 	width: {
 		type: Number,
 		label: 'Width',
-		default: 300,
+		default: 305,
 		props: {
 			className: 'col-span-3',
 		},
@@ -473,8 +473,7 @@ export const Video = (props = defaultDynamicProps as DynamicProps) => {
 		[isRecording, setIsRecording] = useState(props.record ?? false);
 
 	const [toFadeIn, setToFadeIn] = useState(false),
-		[toShowAnswer, setToShowAnswer] = useState(false),
-		[toFadeOut, setToFadeOut] = useState(false);
+		[toShowAnswer, setToShowAnswer] = useState(false);
 
 	useEffect(() => {
 		setTimeout(async () => {
@@ -569,12 +568,7 @@ export const Video = (props = defaultDynamicProps as DynamicProps) => {
 							setToFadeIn(false);
 						}
 
-						if (!toFadeIn) {
-							await new Promise(r => setTimeout(r, 500));
-
-							setIsRecording(false);
-							console.log('STOP RECORDING');
-						}
+						if (!toFadeIn) setIsRecording(false);
 					},
 				})}>
 				<Group x={padding} y={padding}>
