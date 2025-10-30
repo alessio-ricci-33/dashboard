@@ -4,7 +4,7 @@
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { storage, indexedDBStore } from '@/utils/storage';
 import { usePersistentState } from './usePersistentState';
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 
 interface AuthContextType {
 	user: any | null;
@@ -17,12 +17,13 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | null>(null);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-	const router = useRouter();
+	const router = useRouter(),
+		pathname = usePathname();
 	const [loading, setLoading] = useState(true);
 	const [user, setUser] = usePersistentState('user', null, 'local');
 
 	useEffect(() => {
-		if (user) {
+		if (user && pathname === '/login') {
 			router.replace('/');
 			router.refresh();
 		}

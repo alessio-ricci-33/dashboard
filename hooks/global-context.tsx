@@ -33,7 +33,17 @@ export const GlobalProvider = ({ children }: GlobalProviderProps) => {
 		<GlobalContext.Provider
 			value={{
 				isRecording,
-				setIsRecording,
+				setIsRecording: (args: Parameters<typeof setIsRecording>[0]) => {
+					if (isRecording) return setIsRecording(args);
+
+					const next = typeof args === 'boolean' ? args : args(isRecording);
+
+					document
+						.querySelectorAll('#entry > *')
+						.forEach(el => el.classList.toggle('hidden', next));
+
+					return setTimeout(() => setIsRecording(next), 1000);
+				},
 			}}>
 			{children}
 		</GlobalContext.Provider>

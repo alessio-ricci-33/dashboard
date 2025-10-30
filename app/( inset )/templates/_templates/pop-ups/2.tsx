@@ -211,19 +211,18 @@ export const Image = (
 				<Group x={PADDING + 12} y={PADDING + 10}>
 					{/* Immagine locale sopra il rettangolo */}
 					<LocalImage
-						x={-1}
-						y={-1}
+						x={6}
+						y={0}
 						src="/messaggi-italia.png" // immagine salvata in public/images/logo.png
-						height={height - PADDING + 2}
-						shadowColor="#15171c"
-						shadowBlur={7}
+						height={height - PADDING}
 					/>
 
-					<Group x={height - PADDING + 8}>
+					<Group x={height}>
 						<Text
-							y={-2}
-							fontSize={19}
+							y={1}
+							fontSize={17}
 							lineHeight={1}
+							letterSpacing={1.4}
 							text={brandName}
 							fontFamily="logo" // deve corrispondere al nome definito in @font-face
 							fill="white"
@@ -233,6 +232,7 @@ export const Image = (
 							y={PADDING}
 							fontSize={17}
 							lineHeight={1}
+							letterSpacing={0}
 							text={message}
 							fontFamily="secondary" // deve corrispondere al nome definito in @font-face
 							fill="white"
@@ -287,9 +287,18 @@ export const Video = (
 	}, [props]);
 
 	useFrameCapture(stageRef, isRecording, {
-		format: 'uri',
+		format: 'buffer',
 		targetFps: 60,
-		onComplete: async (frames, fps) => {
+		onAddFrame: async frame => {
+			console.log('frame added', window.socket);
+			await new Promise(r => setTimeout(r, 15));
+			window.socket.emitBuffer(frame);
+		},
+		onComplete: async fps => {
+			if (isRecording) return;
+
+			await new Promise(r => setTimeout(r, 5000));
+
 			try {
 				const response = await fetch('https://server.msgi.it/render-video', {
 					method: 'POST',
@@ -298,7 +307,6 @@ export const Video = (
 					},
 					// Invia l'array di frame e gli FPS calcolati
 					body: JSON.stringify({
-						frames,
 						fps,
 					}),
 				});
@@ -367,14 +375,14 @@ export const Video = (
 						duration: toFadeIn ? animation.fadeIn : animation.fadeOut,
 					},
 
-					onResolve: async () => {
+					onRest: async () => {
 						if (toFadeIn) {
 							await new Promise(r => setTimeout(r, animation.freeze));
 							setToFadeOut(true);
 							return setToFadeIn(false);
 						}
 
-						if (!toFadeIn && toFadeOut) {
+						if (isRecording && !toFadeIn && toFadeOut) {
 							await new Promise(r =>
 								setTimeout(r, animation.fadeOut + 500)
 							);
@@ -421,19 +429,18 @@ export const Video = (
 				<Group x={PADDING + 12} y={PADDING + 10}>
 					{/* Immagine locale sopra il rettangolo */}
 					<LocalImage
-						x={-1}
-						y={-1}
+						x={6}
+						y={0}
 						src="/messaggi-italia.png" // immagine salvata in public/images/logo.png
-						height={height - PADDING + 2}
-						shadowColor="#15171c"
-						shadowBlur={7}
+						height={height - PADDING}
 					/>
 
-					<Group x={height - PADDING + 8}>
+					<Group x={height}>
 						<Text
-							y={-2}
-							fontSize={19}
+							y={1}
+							fontSize={17}
 							lineHeight={1}
+							letterSpacing={1.4}
 							text={brandName}
 							fontFamily="logo" // deve corrispondere al nome definito in @font-face
 							fill="white"
