@@ -9,9 +9,13 @@ export type ModelName =
 	| 'gemini-2.0-flash';
 
 // --- Gestione API Keys con rotazione ---
-const API_KEYS = [env.GEMINI_API_KEY_1, env.GEMINI_API_KEY_2, env.GEMINI_API_KEY_3].filter(
-	Boolean
-) as string[];
+const API_KEYS = [
+	env.GEMINI_API_KEY_1,
+	env.GEMINI_API_KEY_2,
+	env.GEMINI_API_KEY_3,
+	env.GEMINI_API_KEY_4,
+	env.GEMINI_API_KEY_5,
+].filter(Boolean) as string[];
 
 if (API_KEYS.length === 0) {
 	throw new Error('Nessuna API key GEMINI trovata nelle variabili ambiente.');
@@ -33,10 +37,13 @@ const withKeyRotation = async <T>(fn: (client: GoogleGenAI) => Promise<T>): Prom
 		try {
 			return await fn(client);
 		} catch (error: any) {
+			console.log(error);
 			const message = error?.message?.toLowerCase?.() || '';
 
 			// Se è un errore di quota, ruota e riprova
 			if (
+				error.code === 503 ||
+				message.includes('overloaded') ||
 				message.includes('quota') ||
 				message.includes('rate limit') ||
 				message.includes('limit') ||
@@ -69,11 +76,13 @@ const withKeyRotation = async <T>(fn: (client: GoogleGenAI) => Promise<T>): Prom
 export const genShortTitles = async ({
 	modelName = 'gemini-2.5-flash',
 	prompt,
-	systemInstruction = shortsTitles,
+	platform,
+	tonality,
 }: {
 	modelName?: ModelName;
 	prompt: string;
-	systemInstruction: string;
+	platform: string;
+	tonality: string;
 }) => {
 	return await withKeyRotation(async client => {
 		const { models } = client;
@@ -83,10 +92,9 @@ export const genShortTitles = async ({
 			model: modelName,
 			config: {
 				candidateCount: 3,
-				temperature: 0.65,
-				maxOutputTokens: 500,
-				responseMimeType: 'application/json',
-				systemInstruction,
+				temperature: 1.1,
+				responseMimeType: 'text/plain',
+				systemInstruction: shortsTitles({ platform, tonality }),
 			},
 			contents: [
 				{

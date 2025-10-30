@@ -1,48 +1,89 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { Button } from '@/ui/button';
 import { Textarea } from '@/ui/textarea';
 import { Input } from '@/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/ui/select';
 import { FiCopy } from 'react-icons/fi';
 import { toast } from 'sonner';
-import { shortsTitles } from '@/constants/system-instructions';
 import { usePersistentState } from '@/hooks/usePersistentState';
+import { FaArrowUp, FaPlus } from 'react-icons/fa6';
+import { Popover, PopoverTrigger, PopoverContent } from '@/ui/popover';
+import { CgAttachment } from 'react-icons/cg';
 
 export default function Page() {
-	const [prompt, setPrompt] = useState('');
-	const [systemInstruction, setSystemInstruction] = useState(shortsTitles);
+	const [prompt, setPrompt] = useState(''),
+		[CSV, setCSV] = useState('');
+
 	const [model, setModel] = usePersistentState<
 		'gemini-2.5-flash' | 'gemini-2.5-pro' | 'gemini-2.5-flash-lite-preview-06-17'
 	>('tools-model', 'gemini-2.5-flash', 'local');
 	const [loading, setLoading] = useState(false);
-	const [results, setResults] = usePersistentState<{ [key: string]: string }>(
-		'titles-platforms',
-		{
-			tiktok: '',
-			youtube: '',
-			instagram: '',
-		},
-		'local'
-	);
+
+	const [open, setOpen] = useState(false);
+	const fileInputRef = useRef<HTMLInputElement>(null);
+
+	const [results, setResults] = useState<{ [key: string]: string[] }>({
+		tiktok: [],
+		youtube: [],
+		instagram: [],
+	});
+
+	const handleCSVUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+		const file = e.target.files?.[0];
+		if (!file) return;
+
+		const reader = new FileReader();
+		reader.onload = event => {
+			const text = event.target?.result as string;
+			try {
+				const cleaned = text
+					.split('\n')
+					.map(line => line.trim())
+					.filter(Boolean)
+					.map(line =>
+						line
+							// Rimuove timestamp tipo 00:00, 0:00:00, [00:00], ecc.
+							.replace(/\[?\b\d{1,2}:\d{2}(?::\d{2})?\b\]?/g, '')
+							// Rimuove pattern tipo p1;text; o p2;text;
+							.replace(
+								/^p\d+;text;/i,
+								d => d.replace('text;', '').split(';')[0] + ': '
+							)
+							// // Rimuove eventuali separatori extra tipo "p1;", "p2;", ecc.
+							// .replace(/^p\d+;/i, '')
+							// Rimuove doppio punto e virgola iniziale o spazi strani
+							.replace(/^;+/, '')
+							.trim()
+					)
+					.filter(Boolean)
+					.join('\n');
+
+				console.log(cleaned);
+
+				setCSV(cleaned);
+				toast.success('File CSV caricato!');
+				setOpen(false);
+			} catch (err) {
+				console.error(err);
+				toast.error('❌ Errore nella lettura o pulizia del file CSV');
+			}
+		};
+		reader.readAsText(file);
+	};
 
 	const handleGenerate = async () => {
-		if (!prompt.trim()) return;
+		if (!prompt.trim() && !CSV) return;
 		setLoading(true);
-
 		try {
-			// ESEMPIO DI CHIAMATA FUTURA:
 			const res = await fetch('/api/genai/titles', {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({ prompt, systemInstruction, model }),
+				body: JSON.stringify({ prompt: `${prompt}\n\n${CSV}`, model }),
 			});
-
 			const { success, ...props } = await res.json();
 			if (!success) return toast.error(props.message);
-			console.log(props);
-			// Mock temporaneo
 			setResults(props.data);
 		} catch (err) {
 			console.error('Errore durante la generazione', err);
@@ -61,103 +102,126 @@ export default function Page() {
 	};
 
 	return (
-		<section className="flex flex-col w-full h-fit gap-p px-p">
-			<h1 className="text-2xl font-semibold tracking-tight">AI Title Generator</h1>
-
-			<div className="grid grid-cols-12 auto-rows-fr gap-p">
-				{/* CONFIGURAZIONE MODELLO E SYSTEM INSTRUCTION */}
-				<div className="col-span-12 md:col-span-8 row-span-3 flex flex-col gap-2">
-					<div className="flex flex-row items-end justify-between gap-2">
-						<label className="text-sm font-medium text-muted-foreground leading-none">
-							Gen. model
-						</label>
-						<Select
-							value={model}
-							onValueChange={v => setModel(v as typeof model)}>
-							<SelectTrigger className="w-56 !h-full">
-								<SelectValue placeholder="Seleziona modello" />
-							</SelectTrigger>
-							<SelectContent className="!outline-none !border-zinc-600 !ring-0">
-								<SelectItem value="gemini-2.0-flash">
-									gemini-2.0-flash
-								</SelectItem>
-								<SelectItem value="gemini-2.5-flash">
-									gemini-2.5-flash
-								</SelectItem>
-								<SelectItem value="gemini-2.5-flash-lite-preview-06-17">
-									gemini-2.5-flash-lite-preview-06-17
-								</SelectItem>
-								<SelectItem value="gemini-2.5-pro">
-									gemini-2.5-pro
-								</SelectItem>
-							</SelectContent>
-						</Select>
-					</div>
-					<Textarea
-						spellCheck={false}
-						value={systemInstruction}
-						onChange={e => setSystemInstruction(e.target.value)}
-						placeholder="Istruzioni di sistema (facoltative, per personalizzare lo stile o il tono del modello)..."
-						className="h-full resize-none"
-					/>
+		<>
+			{/* HEADER */}
+			<div className="absolute top-0 inset-x-0 mx-auto self-center justify-self-center flex flex-col gap-2">
+				<div className="flex flex-row items-end justify-between gap-2 ">
+					<Select
+						value={model}
+						onValueChange={v => setModel(v as typeof model)}>
+						<SelectTrigger className="!w-fit !h-full rounded-full !font-secondary capitalize *:data-[slot=select-value]:!-mb-1 [&>svg]:!size-4.5">
+							<SelectValue placeholder="Seleziona modello" />
+						</SelectTrigger>
+						<SelectContent className="!outline-none !border-zinc-600 !ring-0 [&>*]:!font-secondary [&>*]:capitalize">
+							<SelectItem value="gemini-2.5-flash">
+								gemini-2.5-flash
+							</SelectItem>
+							<SelectItem value="gemini-2.5-flash-lite-preview-06-17">
+								gemini-2.5-flash-lite-preview-06-17
+							</SelectItem>
+							<SelectItem value="gemini-2.5-pro">
+								gemini-2.5-pro
+							</SelectItem>
+						</SelectContent>
+					</Select>
 				</div>
+			</div>
 
-				<div className="grid grid-cols-subgrid grid-rows-subgrid gap-p col-span-full row-span-4">
-					{/* AREA PROMPT */}
-					<div className="relative flex flex-col col-span-8 row-span-5 col-start-1 gap-p pt-p">
-						<label className="text-sm font-medium text-muted-foreground leading-none">
-							Transcription
-						</label>
-						<Textarea
-							value={prompt}
-							spellCheck={false}
-							onChange={e => setPrompt(e.target.value)}
-							placeholder="Incolla qui la trascrizione..."
-							className="h-full resize-none"
-						/>
+			{/* CONTENUTO */}
+			<section className="grid grid-cols-3 auto-rows-fr w-full h-fit gap-p px-p pt-10">
+				{Object.entries(results).map(([key, candidates]) => (
+					<div
+						key={key}
+						className="relative flex flex-col col-span-1 h-full items-center justify-start gap-p">
+						<h2 className="capitalize text-lg font-semibold leading-none row-span-1">
+							{key}
+						</h2>
+						{candidates.map((value, index) => (
+							<div
+								key={index}
+								className="flex flex-row justify-between items-center row-span-2 size-full gap-p py-0 px-3">
+								<Input
+									value={value}
+									onChange={e =>
+										setResults(prev => {
+											prev[key][index] = e.target.value;
+											return { ...prev };
+										})
+									}
+									className="font-medium text-start h-full p-3"
+								/>
+								<Button
+									variant="secondary"
+									size="icon"
+									onClick={() => handleCopy(value)}
+									title="Copia titolo"
+									className="cursor-pointer h-full">
+									<FiCopy size={18} />
+								</Button>
+							</div>
+						))}
+					</div>
+				))}
+
+				{/* AREA PROMPT */}
+				<div className="absolute bottom-p inset-x-0 flex flex-col justify-center items-center gap-p w-2/5 mx-auto dark:bg-input/30 rounded-4xl">
+					<div className="relative flex flex-row items-center justify-between w-full h-fit !py-2 px-2.5">
+						<Popover open={open} onOpenChange={setOpen}>
+							<PopoverTrigger asChild>
+								<Button
+									disabled={loading}
+									className="z-30 shrink-0 cursor-pointer bg-transparent rounded-full hover:bg-foreground/8 !px-1 !py-3 aspect-square h-8">
+									<FaPlus
+										size={24}
+										className="text-foreground "
+									/>
+								</Button>
+							</PopoverTrigger>
+							<PopoverContent
+								align="start"
+								sideOffset={16}
+								className="flex flex-col items-start w-fit gap-3 !border-none !outline-none !ring-transparent !shadow-[0_0_9px_0px] shadow-sidebar rounded-xl overflow-visible">
+								<div className="flex flex-row items-center gap-2">
+									<input
+										ref={fileInputRef}
+										type="file"
+										accept=".csv"
+										onChange={handleCSVUpload}
+										className="hidden"
+									/>
+
+									{/* Custom trigger button */}
+									<Button
+										type="button"
+										variant="outline"
+										onClick={() =>
+											fileInputRef.current?.click()
+										}>
+										<CgAttachment size={24} />
+										Carica CSV
+									</Button>
+								</div>
+							</PopoverContent>
+						</Popover>
+
+						<div className="relative shrink flex flex-row items-center justify-start size-full h-8">
+							<Textarea
+								value={prompt}
+								spellCheck={false}
+								onChange={e => setPrompt(e.target.value)}
+								placeholder="Incolla qui la trascrizione..."
+								className="absolute inset-y-auto my-auto mr-auto left-0 w-full !px-2.5 !pt-3 h-[calc(100%+var(--spacing)*3)] min-h-0 resize-none !border-none !outline-none bg-transparent !ring-transparent !shadow-none flex flex-col items-start justify-end text-start align-bottom overflow-y-auto placeholder:-translate-x-0.25"
+							/>
+						</div>
 						<Button
 							onClick={handleGenerate}
 							disabled={loading}
-							className="absolute bottom-4 right-4">
-							{loading ? 'Generazione in corso...' : 'Genera Titoli AI'}
+							className="shrink-0 contrast-110 z-30 cursor-pointer rounded-full !px-1 !py-3 aspect-square h-8 shadow-[0_0_7px_-1px] shadow-foreground/85 !bg-transparent !bg-radial from-foreground/80 to-foreground">
+							<FaArrowUp size={24} />
 						</Button>
 					</div>
-
-					{/* RISULTATI */}
-					<section className="grid grid-cols-1 auto-rows-fr gap-p col-span-4 row-span-4 pt-10">
-						{Object.keys(results).length > 0 &&
-							Object.entries(results).map(([key, value]) => (
-								<div
-									key={key}
-									className="relative grid grid-rows-subgrid row-span-3 h-full gap-p">
-									<h2 className="capitalize text-lg font-semibold leading-none row-span-1">
-										{key}
-									</h2>
-									<div className="flex flex-row justify-between items-center row-span-2 h-full gap-p p-0">
-										<Input
-											value={value}
-											onChange={e =>
-												setResults(prev => ({
-													...prev,
-													[key]: e.target.value,
-												}))
-											}
-											className="font-medium text-start h-full"
-										/>
-										<Button
-											variant="secondary"
-											size="icon"
-											onClick={() => handleCopy(value)}
-											title="Copia titolo"
-											className="cursor-pointer h-full">
-											<FiCopy size={18} />
-										</Button>
-									</div>
-								</div>
-							))}
-					</section>
 				</div>
-			</div>
-		</section>
+			</section>
+		</>
 	);
 }
