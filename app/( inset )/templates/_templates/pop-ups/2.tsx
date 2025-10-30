@@ -366,8 +366,8 @@ export const Video = (
 			ref={stageRef}
 			style={{ backgroundColor: 'transparent' }}
 			options={{ preserveDrawingBuffer: true }}
-			height={height + PADDING * 2 + props.offsetY}
-			width={width + PADDING * 2}>
+			width={width + MARGIN * 2 + PADDING * 2}
+			height={height + MARGIN * 2 + PADDING * 2 + props.offsetY}>
 			{/* @ts-ignore */}
 			<animated.Layer
 				key={JSON.stringify(props)}
@@ -404,10 +404,10 @@ export const Video = (
 				{/* @ts-ignore */}
 
 				<Rect
-					x={PADDING}
-					y={PADDING - 0.5}
-					width={width}
-					height={height}
+					x={MARGIN}
+					y={MARGIN - 0.5}
+					width={width + PADDING * 2}
+					height={height + PADDING * 2}
 					fill="#000000"
 					cornerRadius={35}
 					stroke="#000000" // colore del bordo
@@ -419,10 +419,10 @@ export const Video = (
 				/>
 
 				<Rect
-					x={PADDING}
-					y={PADDING}
-					width={width}
-					height={height}
+					x={MARGIN}
+					y={MARGIN}
+					width={width + PADDING * 2}
+					height={height + PADDING * 2}
 					fillLinearGradientStartPoint={{ x: 0.8, y: -10 }}
 					fillLinearGradientEndPoint={{ x: -0.8, y: height }}
 					fillLinearGradientColorStops={[0, '#2f2f32', 0.85, '#000000']}
@@ -435,18 +435,22 @@ export const Video = (
 					shadowOffsetY={-0.5}
 				/>
 
-				<Group x={PADDING + 12} y={PADDING + 10}>
+				<Group
+					x={PADDING + MARGIN}
+					y={PADDING + MARGIN}
+					height={height}
+					width={width}>
 					{/* Immagine locale sopra il rettangolo */}
 					<LocalImage
-						x={6}
+						x={PADDING - 3}
 						y={0}
 						src="/messaggi-italia.png" // immagine salvata in public/images/logo.png
-						height={height - PADDING}
+						height={height}
 					/>
 
-					<Group x={height}>
+					<Group x={height + PADDING * 1.5}>
 						<Text
-							y={1}
+							y={2.5}
 							fontSize={17}
 							lineHeight={1}
 							letterSpacing={1.4}
@@ -456,24 +460,29 @@ export const Video = (
 							opacity={0.75}
 						/>
 						<Text
-							y={PADDING}
+							y={height / 2 + 1}
 							fontSize={17}
 							lineHeight={1}
+							letterSpacing={0}
 							text={message}
 							fontFamily="secondary" // deve corrispondere al nome definito in @font-face
 							fill="white"
 						/>
 					</Group>
 
-					<Group x={width - PADDING * 2 - 2} y={(height - PADDING) / 2 - 0.5}>
+					<Group
+						y={height / 2}
+						x={width - height * 0.45 - PADDING / 2}
+						height={height * 0.9}
+						width={height * 0.9}>
 						<Circle
 							radius={999}
 							fill="#15171c"
 							shadowBlur={7}
 							shadowColor="#ffffff"
 							shadowOpacity={0.4}
-							height={height - PADDING}
-							width={height - PADDING}
+							height={height * 0.9}
+							width={height * 0.9}
 						/>
 						<SvgIconImage
 							Icon={
@@ -483,9 +492,9 @@ export const Video = (
 									opacity={0.55}
 								/>
 							}
-							height={21}
-							x={-height / 2 + PADDING - 2}
-							y={-PADDING / 2}
+							height={Math.max(21, height * 0.33)}
+							x={-Math.max(10.5, height * 0.165)}
+							y={-Math.max(10.5, height * 0.165)}
 						/>
 					</Group>
 				</Group>
