@@ -12,17 +12,29 @@ export const POST = async (req: Request) =>
 		);
 
 		return {
-			tiktok: tiktok.candidates
-				.map(c => c.content.parts)
-				.flat()
-				.map(p => p.text),
-			youtube: youtube.candidates
-				.map(c => c.content.parts)
-				.flat()
-				.map(p => p.text),
-			instagram: instagram.candidates
-				.map(c => c.content.parts)
-				.flat()
-				.map(p => p.text),
+			tiktok: [
+				...new Set(
+					tiktok.candidates
+						.map(c => c.content.parts)
+						.flat()
+						.map(p => p.text)
+				),
+			],
+			youtube: [
+				...new Set(
+					youtube.candidates
+						.map(c => c.content.parts)
+						.flat()
+						.map(p => p.text)
+				),
+			],
+			instagram: [
+				...new Set(
+					instagram.candidates
+						.map(c => c.content.parts)
+						.flat()
+						.map(p => p.text)
+				),
+			],
 		};
 	});
