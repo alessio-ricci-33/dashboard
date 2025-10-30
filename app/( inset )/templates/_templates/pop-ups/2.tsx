@@ -44,7 +44,7 @@ export const params = {
 	height: {
 		type: Number,
 		label: 'Height',
-		default: 57,
+		default: 42,
 		props: {
 			className: 'col-span-4',
 		},
@@ -55,7 +55,7 @@ export const params = {
 	width: {
 		type: Number,
 		label: 'Width',
-		default: 360,
+		default: 340,
 		props: {
 			className: 'col-span-4',
 		},
@@ -159,7 +159,8 @@ export const defaultDynamicProps: DynamicProps = Object.entries(dynamicParams).r
 	{}
 );
 
-const PADDING = 20;
+const PADDING = 10,
+	MARGIN = 16;
 
 export const Image = (
 	props = defaultProps as Props & { download?: boolean; onDownload?: () => void }
@@ -171,16 +172,16 @@ export const Image = (
 			filename={_id}
 			download={props.download}
 			onDownload={props.onDownload}
-			width={width + PADDING * 2}
-			height={height + PADDING * 2}
+			width={width + MARGIN * 2 + PADDING * 2}
+			height={height + MARGIN * 2 + PADDING * 2}
 			options={{ preserveDrawingBuffer: true }}
 			style={{ backgroundColor: 'transparent', overflow: 'visible' }}>
 			<Layer>
 				<Rect
-					x={PADDING}
-					y={PADDING - 0.5}
-					width={width}
-					height={height}
+					x={MARGIN}
+					y={MARGIN - 0.5}
+					width={width + PADDING * 2}
+					height={height + PADDING * 2}
 					fill="#000000"
 					cornerRadius={35}
 					stroke="#000000" // colore del bordo
@@ -192,10 +193,10 @@ export const Image = (
 				/>
 
 				<Rect
-					x={PADDING}
-					y={PADDING}
-					width={width}
-					height={height}
+					x={MARGIN}
+					y={MARGIN}
+					width={width + PADDING * 2}
+					height={height + PADDING * 2}
 					fillLinearGradientStartPoint={{ x: 0.8, y: -10 }}
 					fillLinearGradientEndPoint={{ x: -0.8, y: height }}
 					fillLinearGradientColorStops={[0, '#2f2f32', 0.85, '#000000']}
@@ -208,16 +209,20 @@ export const Image = (
 					shadowOffsetY={-0.5}
 				/>
 
-				<Group x={PADDING + 12} y={PADDING + 10}>
+				<Group
+					x={PADDING + MARGIN}
+					y={PADDING + MARGIN}
+					height={height}
+					width={width}>
 					{/* Immagine locale sopra il rettangolo */}
 					<LocalImage
-						x={6}
+						x={PADDING - 3}
 						y={0}
 						src="/messaggi-italia.png" // immagine salvata in public/images/logo.png
-						height={height - PADDING}
+						height={height}
 					/>
 
-					<Group x={height}>
+					<Group x={height + PADDING * 1.5}>
 						<Text
 							y={1}
 							fontSize={17}
@@ -229,7 +234,7 @@ export const Image = (
 							opacity={0.75}
 						/>
 						<Text
-							y={PADDING}
+							y={PADDING + 9}
 							fontSize={17}
 							lineHeight={1}
 							letterSpacing={0}
@@ -239,15 +244,19 @@ export const Image = (
 						/>
 					</Group>
 
-					<Group x={width - PADDING * 2 - 2} y={(height - PADDING) / 2 - 0.5}>
+					<Group
+						y={height / 2}
+						x={width - height * 0.45 - PADDING / 2}
+						height={height * 0.9}
+						width={height * 0.9}>
 						<Circle
 							radius={999}
 							fill="#15171c"
 							shadowBlur={7}
 							shadowColor="#ffffff"
 							shadowOpacity={0.4}
-							height={height - PADDING + 2}
-							width={height - PADDING + 2}
+							height={height * 0.9}
+							width={height * 0.9}
 						/>
 						<SvgIconImage
 							Icon={
@@ -257,9 +266,9 @@ export const Image = (
 									opacity={0.55}
 								/>
 							}
-							height={21}
-							x={-height / 2 + PADDING - 2}
-							y={-PADDING / 2}
+							height={Math.max(21, height * 0.33)}
+							x={-Math.max(10.5, height * 0.165)}
+							y={-Math.max(10.5, height * 0.165)}
 						/>
 					</Group>
 				</Group>
@@ -463,8 +472,8 @@ export const Video = (
 							shadowBlur={7}
 							shadowColor="#ffffff"
 							shadowOpacity={0.4}
-							height={height - PADDING + 2}
-							width={height - PADDING + 2}
+							height={height - PADDING}
+							width={height - PADDING}
 						/>
 						<SvgIconImage
 							Icon={
