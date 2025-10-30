@@ -290,6 +290,29 @@ export const Image = (
 									y={14}
 								/>
 							</Group>
+							<Group x={20} y={height * 0.07}>
+								<Rect
+									x={0}
+									y={0}
+									width={width - 40}
+									height={height * 0.31}
+									fill={'#000000'}
+									cornerRadius={12}
+									shadowBlur={12}
+									shadowColor="#000000"
+									shadowOpacity={0.66}
+								/>
+								{/* Current chat */}
+								{props.chatSnapshot && (
+									<LocalImage
+										y={height * 0.025}
+										src={props.chatSnapshot}
+										width={width - 50}
+										x={5}
+										cornerRadius={12}
+									/>
+								)}
+							</Group>
 						</Group>
 
 						<Group y={height * 0.6} height={height * 0.22}>
@@ -485,9 +508,20 @@ export const Video = (props = defaultDynamicProps as DynamicProps) => {
 	}, [props]);
 
 	useFrameCapture(stageRef, isRecording, {
-		format: 'uri',
+		format: 'buffer',
 		targetFps: 60,
-		onComplete: async (frames, fps) => {
+		onAddFrame: async frame => {
+			if (isRecording) {
+				console.log('frame added', window.socket);
+				await new Promise(r => setTimeout(r, 15));
+				window.socket.emitBuffer(frame);
+			}
+		},
+		onComplete: async fps => {
+			if (isRecording) return;
+
+			await new Promise(r => setTimeout(r, 5000));
+
 			try {
 				const response = await fetch('https://server.msgi.it/render-video', {
 					method: 'POST',
@@ -496,7 +530,6 @@ export const Video = (props = defaultDynamicProps as DynamicProps) => {
 					},
 					// Invia l'array di frame e gli FPS calcolati
 					body: JSON.stringify({
-						frames,
 						fps,
 					}),
 				});
@@ -568,7 +601,7 @@ export const Video = (props = defaultDynamicProps as DynamicProps) => {
 							setToFadeIn(false);
 						}
 
-						if (!toFadeIn) setIsRecording(false);
+						if (isRecording && !toFadeIn) setIsRecording(false);
 					},
 				})}>
 				<Group x={padding} y={padding}>
