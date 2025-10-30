@@ -17,21 +17,18 @@ Genera titoli virali e persuasivi per ${platform}.
 - Ogni titolo **DEVE avere** una descrizione SEO forte:
       Funzione della descrizione: aumentare l'engagement e repertibilità da AI/SEO.
 - Esempi di formato corretto:
-  "😳 Non Doveva Leggere Quello! Chat segreta rivelata tra due amici con un finale imprevedibile. #shockmoment #chatdrama #viralsuspense"
-
-  "💌 Messaggio Alle 3 Di Notte Una conversazione che cambia tutto… scoprila adesso! #latenightvibes #messaggiodrammatico #storytwist"
-
-  "🔥 Ti Sfido A Guardarla Una chat così reale che penserai sia la tua. #chataddict #truestoryfeels #serialeinterattiva"
-
-  "👀 Cosa Nasconde Davvero? Quando un messaggio porta a un segreto troppo grande per essere taciuto. #curiosità #segretionline #misterostory"
-
-  "💔 Ti Ha Lasciato Così? L’ultima chat prima del silenzio… un finale che ti spezzerà. #dramalive #ultimomessaggio #romanzodigitale"
+  ESEMPIO 1: "😳 Non Doveva Leggere Quello! Chat segreta rivelata tra due amici con un finale imprevedibile. #shockmoment #chatdrama #viralsuspense"
+  ESEMPIO 2: "💌 Messaggio Alle 3 Di Notte Una conversazione che cambia tutto… scoprila adesso! #latenightvibes #messaggiodrammatico #storytwist"
+  ESEMPIO 3: "🔥 Ti Sfido A Guardarla Una chat così reale che penserai sia la tua. #chataddict #truestoryfeels #serialeinterattiva"
+  ESEMPIO 4: "👀 Cosa Nasconde Davvero? Quando un messaggio porta a un segreto troppo grande per essere taciuto. #curiosità #segretionline #misterostory"
+  ESEMPIO 5: "💔 Ti Ha Lasciato Così? L’ultima chat prima del silenzio… un finale che ti spezzerà. #dramalive #ultimomessaggio #romanzodigitale"
 
 💬 TONO DA ASSUMERE per ${platform}:
       ${tonality}
 
 🧠 CRITERI:
-      - Ogni titolo deve avere un hook chiaro e diverso dagli altri.
+      - Il titolo deve avere un hook chiaro, unico e clickbait.
+      - **DEVI generare** solo un singolo titolo alla volta.
       - Linguaggio naturale e coerente con la trascrizione.
       - Nessuna spiegazione extra, solo emoji + titolo + hashtag.
 `.trim();

@@ -24,11 +24,15 @@ export default function Page() {
 	const [open, setOpen] = useState(false);
 	const fileInputRef = useRef<HTMLInputElement>(null);
 
-	const [results, setResults] = useState<{ [key: string]: string[] }>({
-		tiktok: [],
-		youtube: [],
-		instagram: [],
-	});
+	const [results, setResults] = usePersistentState<{ [key: string]: string[] }>(
+		'AI-tools-sgorts-titles',
+		{
+			tiktok: [],
+			youtube: [],
+			instagram: [],
+		},
+		'local'
+	);
 
 	const handleCSVUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
 		const file = e.target.files?.[0];
