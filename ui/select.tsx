@@ -37,9 +37,9 @@ function SelectTrigger({
 			)}
 			{...props}>
 			{children}
-			<SelectPrimitive.Icon asChild>
-				<HiOutlineChevronUpDown />
-			</SelectPrimitive.Icon>
+			{/* <SelectPrimitive.Icon asChild> */}
+			<HiOutlineChevronUpDown className="!relative -mr-2" />
+			{/* </SelectPrimitive.Icon> */}
 		</SelectPrimitive.Trigger>
 	);
 }
