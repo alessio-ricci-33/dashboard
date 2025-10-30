@@ -224,7 +224,7 @@ export const Image = (
 
 					<Group x={height + PADDING * 1.5}>
 						<Text
-							y={1}
+							y={2.5}
 							fontSize={17}
 							lineHeight={1}
 							letterSpacing={1.4}
@@ -234,7 +234,7 @@ export const Image = (
 							opacity={0.75}
 						/>
 						<Text
-							y={PADDING + 9}
+							y={height / 2 + 1}
 							fontSize={17}
 							lineHeight={1}
 							letterSpacing={0}
