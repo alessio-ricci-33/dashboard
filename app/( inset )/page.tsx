@@ -7,10 +7,11 @@ import { Checkbox } from '@/ui/checkbox';
 import { getAll } from './page.server';
 import { Label } from '@/ui/label';
 import { cn } from '@/utils/shadcn';
+import { usePersistentState } from '@/hooks/usePersistentState';
 
 export default () => {
 	const [shorts, setShorts] = useState([]),
-		[keys, setKeys] = useState(['views', 'likes', 'comments', 'favorites']);
+		[keys, setKeys] = usePersistentState('visible-keys', ['views'], 'local');
 
 	useEffect(() => {
 		getAll().then(setShorts);

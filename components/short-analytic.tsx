@@ -38,12 +38,22 @@ export const ShortAnalytic = ({
 						fill
 					/>
 				</div>
-				<div>
+				<div className="flex flex-col gap-[calc(var(--p)*.8)] [&_*]:!leading-none">
 					<span className="text-sm text-accent-foreground/60">
 						<p className="text-base text-foreground/90 inline capitalize">
 							{new Date(
 								short.metadata.snippet.publishedAt
 							).toLocaleDateString('it-IT', { weekday: 'long' })}
+							&nbsp;
+							<p className="inline text-sm">
+								{new Date(
+									short.metadata.snippet.publishedAt
+								).getHours() +
+									':' +
+									new Date(
+										short.metadata.snippet.publishedAt
+									).getMinutes()}
+							</p>
 							&ensp;
 						</p>
 						•
