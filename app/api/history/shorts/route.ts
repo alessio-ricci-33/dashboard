@@ -3,14 +3,10 @@ import _try from '@/utils/_try';
 
 export const GET = async (req: Request) =>
 	await _try(async () => {
-		const ids = await Short.find({}).lean();
-
-		// Ordina per UUID v7 (lexicographically ordinabile)
-		ids.sort(
-			(a, b) =>
-				new Date(b.metadata.snippet.publishedAt as any).getTime() -
-				new Date(a.metadata.snippet.publishedAt as any).getTime()
-		);
+		const ids = await Short.find({})
+			.sort({ 'metadata.snippet.publishedAt': -1 })
+			.limit(15)
+			.lean();
 
 		return ids.map(short => {
 			const deltas = [];

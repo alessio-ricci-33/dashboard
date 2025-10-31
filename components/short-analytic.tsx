@@ -39,10 +39,22 @@ export const ShortAnalytic = ({
 					/>
 				</div>
 				<div>
-					<h4>{short.metadata.snippet.title}</h4>
-					<p className="text-sm text-accent-foreground/60">
-						Views: {short.metricsHistory.slice(-1)[0].views}
-					</p>
+					<span className="text-sm text-accent-foreground/60">
+						<p className="text-base text-foreground/90 inline capitalize">
+							{new Date(
+								short.metadata.snippet.publishedAt
+							).toLocaleDateString('it-IT', { weekday: 'long' })}
+							&ensp;
+						</p>
+						•
+						<p className="text-foreground/80 inline">
+							&ensp;{short.metricsHistory.slice(-1)[0].views}&nbsp;
+						</p>
+						views
+					</span>
+					<h4 className="text-accent-foreground/65">
+						{short.metadata.snippet.title}
+					</h4>
 				</div>
 			</div>
 			<div
