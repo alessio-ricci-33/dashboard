@@ -11,11 +11,20 @@ import { usePersistentState } from '@/hooks/usePersistentState';
 
 export default () => {
 	const [shorts, setShorts] = useState([]),
+		[index, setIndex] = useState(-1),
 		[keys, setKeys] = usePersistentState('visible-keys', ['views'], 'local');
 
 	useEffect(() => {
 		getAll().then(setShorts);
 	}, []);
+
+	useEffect(() => {
+		const interval = setTimeout(() => {
+			setIndex(prev => prev + 1);
+		}, 350);
+
+		return () => clearTimeout(interval);
+	}, [index]);
 
 	return (
 		<div className="flex flex-col gap-[calc(var(--p)*2)] w-full px-p mb-40">
@@ -81,18 +90,20 @@ export default () => {
 				</div>
 			</div>
 			<div className="grid auto-rows-fr w-full gap-[calc(var(--p)*2)]">
-				{shorts.map((short, index) => (
+				{shorts.map((short, i) => (
 					<div className="relative size-full">
-						{index > 0 && (
+						{i > 0 && (
 							<Separator
-								className="absolute -top-p -left-p !w-[calc(var(--p)*2+100%)] opacity-90"
+								data-reveal={index >= i}
+								className="absolute -top-p -left-p !w-[calc(var(--p)*2+100%)] opacity-90 data-[reveal=false]:opacity-0 [transition-timing-function:cubic-bezier(0.4,0,.2,.4,1)] duration-600 transition-opacity"
 								orientation="horizontal"
 							/>
 						)}
 						<ShortAnalytic
-							key={index}
+							key={i}
+							visible={index >= i}
 							visibleKeys={keys}
-							index={index}
+							index={i}
 							{...short}
 						/>
 					</div>

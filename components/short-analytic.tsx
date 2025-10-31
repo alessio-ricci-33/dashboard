@@ -8,26 +8,25 @@ import type { ShortType } from '@/models/schema/analytics/short';
 
 export const ShortAnalytic = ({
 	index,
+	visible = true,
 	visibleKeys = ['views', 'likes', 'comments', 'favorites'],
 	...short
 }: ShortType & { index: number; visibleKeys: string[] }) => {
-	const [reveal, setReveal] = useState(false),
-		[showChart, setShowChart] = useState(false);
+	const [showChart, setShowChart] = useState(false);
 
 	useEffect(() => {
-		if (index <= 0) setReveal(true);
+		if (!visible) return;
 
-		setTimeout(() => {
-			setReveal(true);
-			setTimeout(() => {
-				setShowChart(true);
-			}, 500);
-		}, index * 200);
-	}, [index]);
+		const reveal = setTimeout(() => {
+			setShowChart(true);
+		}, 850);
+
+		return () => clearTimeout(reveal);
+	}, [visible]);
 
 	return (
 		<div
-			data-reveal={reveal}
+			data-reveal={visible}
 			className="data-[reveal=true]:opacity-100 data-[reveal=false]:opacity-0 [transition-timing-function:cubic-bezier(0.4,0,.2,.4,1)] delay-500 duration-600 transition-opacity flex flex-row justify-between items-start size-full">
 			<div className="flex flex-row h-full gap-p">
 				<div className="relative h-full aspect-[9/16]">
