@@ -46,7 +46,7 @@ export default function RootLayout({ sidebar, children: inset }: Layouts) {
 	return (
 		<html
 			lang="it"
-			className={`${logo.variable} ${secondary.variable} antialiased`}
+			className={`${logo.variable} ${secondary.variable} antialiased dark`}
 			data-theme="dark">
 			<ThemeProvider defaultValue="dark">
 				<GlobalProvider>
