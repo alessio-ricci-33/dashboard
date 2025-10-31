@@ -8,7 +8,7 @@ import type { ShortType } from '@/models/schema/analytics/short';
 
 export const ShortAnalytic = ({
 	index,
-	visibleKeys = ['views', 'likes', 'comments'],
+	visibleKeys = ['views', 'likes', 'comments', 'favorites'],
 	...short
 }: ShortType & { index: number; visibleKeys: string[] }) => {
 	const [reveal, setReveal] = useState(false),
@@ -61,17 +61,14 @@ export const ShortAnalytic = ({
 
 						<BarChart
 							data={short.deltas.map(d => ({
-								date: new Date(d.timestamp).toLocaleDateString(
-									'it-IT',
-									{
-										month: 'short',
-										weekday: 'long',
-									}
-								),
+								date: new Date(d.to).toLocaleDateString('it-IT', {
+									month: 'short',
+									weekday: 'long',
+								}),
 								hours:
-									new Date(d.timestamp).getHours() +
+									new Date(d.to).getHours() +
 									':' +
-									new Date(d.timestamp).getMinutes(),
+									new Date(d.to).getMinutes(),
 								...d,
 							}))}>
 							<XAxis
@@ -85,7 +82,7 @@ export const ShortAnalytic = ({
 
 									return `${month} ${day} · ${date.getHours()}:${date.getMinutes()}`;
 								}}
-								dataKey="timestamp"
+								dataKey="to"
 								tick={{
 									fontSize: '12px',
 								}}
@@ -149,6 +146,15 @@ export const ShortAnalytic = ({
 										/>
 									))}
 								</Bar>
+							)}
+							{visibleKeys.includes('favorites') && (
+								<Bar
+									yAxisId="favorites"
+									dataKey="favorites"
+									name="Δ Rispetto Barra Precedente"
+									radius={[4, 4, 0, 0]}
+									fill={'#ffda0c'}
+								/>
 							)}
 						</BarChart>
 					</ResponsiveContainer>

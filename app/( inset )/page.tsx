@@ -10,14 +10,14 @@ import { cn } from '@/utils/shadcn';
 
 export default () => {
 	const [shorts, setShorts] = useState([]),
-		[keys, setKeys] = useState(['views', 'likes', 'comments']);
+		[keys, setKeys] = useState(['views', 'likes', 'comments', 'favorites']);
 
 	useEffect(() => {
 		getAll().then(setShorts);
 	}, []);
 
 	return (
-		<div className="flex flex-col gap-[calc(var(--p)*2)] w-full px-p">
+		<div className="flex flex-col gap-[calc(var(--p)*2)] w-full px-p mb-40">
 			<div className="flex flex-row justify-between items-center gap-[calc(var(--p)*2)]">
 				<h1 className="text-2xl font-semibold leading-none">Shorts Analytics</h1>
 				<div className="flex flex-row gap-p w-fit">
@@ -47,6 +47,15 @@ export default () => {
 							checkBoxProps: {
 								className:
 									'rounded-full contrast-111 border border-accent data-[state=checked]:bg-[#3ea6ff] data-[state=checked]:text-white bg-[#3ea6ff]/35',
+							},
+						},
+						{
+							key: 'favorites',
+							label: 'Favorites',
+							className: 'bg-[#ffda0c]/35 border border-[#ffda0c]/50',
+							checkBoxProps: {
+								className:
+									'rounded-full contrast-111 border border-accent data-[state=checked]:bg-[#ffda0c] data-[state=checked]:text-white bg-[#ffda0c]/35',
 							},
 						},
 					].map(({ key, label, className, checkBoxProps }, index) => (
