@@ -5,183 +5,201 @@ import { useEffect, useState } from 'react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend, Cell } from 'recharts';
 
 import type { ShortType } from '@/models/schema/analytics/short';
+import { Separator } from '@/ui/separator';
 
 export const ShortAnalytic = ({
 	index,
-	visible = true,
 	visibleKeys = ['views', 'likes', 'comments', 'favorites'],
 	...short
 }: ShortType & { index: number; visibleKeys: string[] }) => {
-	const [showChart, setShowChart] = useState(false);
+	const [reveal, setReveal] = useState(false),
+		[showChart, setShowChart] = useState(false);
 
 	useEffect(() => {
-		if (!visible) return;
+		if (index <= 0) setReveal(true);
 
-		const reveal = setTimeout(() => {
-			setShowChart(true);
-		}, 850);
-
-		return () => clearTimeout(reveal);
-	}, [visible]);
+		setTimeout(() => {
+			setReveal(true);
+			setTimeout(() => {
+				setShowChart(true);
+			}, 850);
+		}, index * 285);
+	}, [index]);
 
 	return (
-		<div
-			data-reveal={visible}
-			className="data-[reveal=true]:opacity-100 data-[reveal=false]:opacity-0 [transition-timing-function:cubic-bezier(0.4,0,.2,.4,1)] delay-500 duration-600 transition-opacity flex flex-row justify-between items-start size-full">
-			<div className="flex flex-row h-full gap-p">
-				<div className="relative h-full aspect-[9/16]">
-					<Image
-						className="absolute !w-auto !h-full my-auto rounded-sm object-cover"
-						src={short.metadata.snippet.thumbnails.maxres.url}
-						alt={short.metadata.snippet.title}
-						fill
-					/>
-				</div>
-				<div className="flex flex-col gap-[calc(var(--p)*.8)] [&_*]:!leading-none">
-					<span className="text-sm text-accent-foreground/60">
-						<p className="text-base text-foreground/90 inline capitalize">
-							{new Date(
-								short.metadata.snippet.publishedAt
-							).toLocaleDateString('it-IT', { weekday: 'long' })}
-							&nbsp;
-							<p className="inline text-sm">
+		<>
+			{index > 0 && (
+				<Separator
+					data-reveal={reveal}
+					className="absolute -top-p -left-p !w-[calc(var(--p)*2+100%)] opacity-90 data-[reveal=false]:opacity-0 [transition-timing-function:cubic-bezier(0.4,0,.2,.4,1)] duration-600 transition-opacity"
+					orientation="horizontal"
+				/>
+			)}
+			<div
+				data-reveal={reveal}
+				className="data-[reveal=true]:opacity-100 data-[reveal=false]:opacity-0 [transition-timing-function:cubic-bezier(0.4,0,.2,.4,1)] delay-500 duration-600 transition-opacity flex flex-row justify-between items-start size-full">
+				<div className="flex flex-row h-full gap-p">
+					<div className="relative h-full aspect-[9/16]">
+						<Image
+							className="absolute !w-auto !h-full my-auto rounded-sm object-cover"
+							src={short.metadata.snippet.thumbnails.maxres.url}
+							alt={short.metadata.snippet.title}
+							fill
+						/>
+					</div>
+					<div className="flex flex-col gap-[calc(var(--p)*.8)] [&_*]:!leading-none">
+						<span className="text-sm text-accent-foreground/60">
+							<p className="text-base text-foreground/90 inline capitalize">
 								{new Date(
 									short.metadata.snippet.publishedAt
-								).getHours() +
-									':' +
-									new Date(
+								).toLocaleDateString('it-IT', { weekday: 'long' })}
+								&nbsp;
+								<p className="inline text-sm">
+									{new Date(
 										short.metadata.snippet.publishedAt
-									).getMinutes()}
+									).getHours() +
+										':' +
+										new Date(
+											short.metadata.snippet.publishedAt
+										).getMinutes()}
+								</p>
+								&ensp;
 							</p>
-							&ensp;
-						</p>
-						•
-						<p className="text-foreground/80 inline">
-							&ensp;{short.metricsHistory.slice(-1)[0].views}&nbsp;
-						</p>
-						views
-					</span>
-					<h4 className="text-accent-foreground/65">
-						{short.metadata.snippet.title}
-					</h4>
+							•
+							<p className="text-foreground/80 inline">
+								&ensp;{short.metricsHistory.slice(-1)[0].views}
+								&nbsp;
+							</p>
+							views
+						</span>
+						<h4 className="text-accent-foreground/65">
+							{short.metadata.snippet.title}
+						</h4>
+					</div>
+				</div>
+				<div
+					data-showchart={showChart}
+					className="relative w-2/5 h-20 data-[showchart=true]:opacity-100 data-[showchart=false]:opacity-0 [transition-timing-function:cubic-bezier(0.4,0,.2,.4,1)] delay-65 duration-850">
+					{showChart && (
+						<ResponsiveContainer width="100%" height="100%">
+							<Legend
+								wrapperStyle={{
+									height: 20, // Altezza totale della legenda (in px)
+									fontSize: '12px', // Dimensione del testo
+									lineHeight: '1em', // Altezza linea
+									overflow: 'hidden', // Se vuoi troncare gli overflow
+								}}
+							/>
+
+							<BarChart
+								data={short.deltas.map(d => ({
+									date: new Date(d.to).toLocaleDateString(
+										'it-IT',
+										{
+											month: 'short',
+											weekday: 'long',
+										}
+									),
+									hours:
+										new Date(d.to).getHours() +
+										':' +
+										new Date(d.to).getMinutes(),
+									...d,
+								}))}>
+								<XAxis
+									// custom labels
+									tickFormatter={timestamp => {
+										const date = new Date(timestamp);
+										const day = date.getDate();
+										const month = date.toLocaleString(
+											'it-IT',
+											{
+												month: 'short',
+											}
+										);
+
+										return `${month} ${day} · ${date.getHours()}:${date.getMinutes()}`;
+									}}
+									dataKey="to"
+									tick={{
+										fontSize: '12px',
+									}}
+									height={12}
+								/>
+
+								<YAxis
+									yAxisId={
+										visibleKeys.includes('views')
+											? 'views'
+											: visibleKeys.includes('likes')
+											? 'likes'
+											: 'comments'
+									}
+									orientation="left"
+									stroke={
+										visibleKeys.includes('views')
+											? '#82ca9d'
+											: visibleKeys.includes('likes')
+											? '#fc365f'
+											: '#3ea6ff'
+									}
+								/>
+
+								<Tooltip content={<CustomTooltip />} />
+
+								{visibleKeys.includes('comments') && (
+									<Bar
+										yAxisId="comments"
+										dataKey="comments"
+										name="Comments"
+										fill="#3ea6ff"
+										radius={[4, 4, 0, 0]}
+									/>
+								)}
+
+								{visibleKeys.includes('likes') && (
+									<Bar
+										yAxisId="likes"
+										dataKey="likes"
+										name="Like"
+										fill="#fc365f"
+										radius={[4, 4, 0, 0]}
+									/>
+								)}
+
+								{visibleKeys.includes('views') && (
+									<Bar
+										yAxisId="views"
+										dataKey="views"
+										name="Δ Rispetto Barra Precedente"
+										radius={[4, 4, 0, 0]}>
+										{short.deltas.map((entry, index) => (
+											<Cell
+												key={`cell-${index}`}
+												fill={
+													entry.views >= 0
+														? '#82ca9d'
+														: '#f87171'
+												} // Verde o Rosso
+											/>
+										))}
+									</Bar>
+								)}
+								{visibleKeys.includes('favorites') && (
+									<Bar
+										yAxisId="favorites"
+										dataKey="favorites"
+										name="Δ Rispetto Barra Precedente"
+										radius={[4, 4, 0, 0]}
+										fill={'#ffda0c'}
+									/>
+								)}
+							</BarChart>
+						</ResponsiveContainer>
+					)}
 				</div>
 			</div>
-			<div
-				data-showchart={showChart}
-				className="relative w-2/5 h-20 data-[showchart=true]:opacity-100 data-[showchart=false]:opacity-0 [transition-timing-function:cubic-bezier(0.4,0,.2,.4,1)] delay-65 duration-850">
-				{showChart && (
-					<ResponsiveContainer width="100%" height="100%">
-						<Legend
-							wrapperStyle={{
-								height: 20, // Altezza totale della legenda (in px)
-								fontSize: '12px', // Dimensione del testo
-								lineHeight: '1em', // Altezza linea
-								overflow: 'hidden', // Se vuoi troncare gli overflow
-							}}
-						/>
-
-						<BarChart
-							data={short.deltas.map(d => ({
-								date: new Date(d.to).toLocaleDateString('it-IT', {
-									month: 'short',
-									weekday: 'long',
-								}),
-								hours:
-									new Date(d.to).getHours() +
-									':' +
-									new Date(d.to).getMinutes(),
-								...d,
-							}))}>
-							<XAxis
-								// custom labels
-								tickFormatter={timestamp => {
-									const date = new Date(timestamp);
-									const day = date.getDate();
-									const month = date.toLocaleString('it-IT', {
-										month: 'short',
-									});
-
-									return `${month} ${day} · ${date.getHours()}:${date.getMinutes()}`;
-								}}
-								dataKey="to"
-								tick={{
-									fontSize: '12px',
-								}}
-								height={12}
-							/>
-
-							<YAxis
-								yAxisId={
-									visibleKeys.includes('views')
-										? 'views'
-										: visibleKeys.includes('likes')
-										? 'likes'
-										: 'comments'
-								}
-								orientation="left"
-								stroke={
-									visibleKeys.includes('views')
-										? '#82ca9d'
-										: visibleKeys.includes('likes')
-										? '#fc365f'
-										: '#3ea6ff'
-								}
-							/>
-
-							<Tooltip content={<CustomTooltip />} />
-
-							{visibleKeys.includes('comments') && (
-								<Bar
-									yAxisId="comments"
-									dataKey="comments"
-									name="Comments"
-									fill="#3ea6ff"
-									radius={[4, 4, 0, 0]}
-								/>
-							)}
-
-							{visibleKeys.includes('likes') && (
-								<Bar
-									yAxisId="likes"
-									dataKey="likes"
-									name="Like"
-									fill="#fc365f"
-									radius={[4, 4, 0, 0]}
-								/>
-							)}
-
-							{visibleKeys.includes('views') && (
-								<Bar
-									yAxisId="views"
-									dataKey="views"
-									name="Δ Rispetto Barra Precedente"
-									radius={[4, 4, 0, 0]}>
-									{short.deltas.map((entry, index) => (
-										<Cell
-											key={`cell-${index}`}
-											fill={
-												entry.views >= 0
-													? '#82ca9d'
-													: '#f87171'
-											} // Verde o Rosso
-										/>
-									))}
-								</Bar>
-							)}
-							{visibleKeys.includes('favorites') && (
-								<Bar
-									yAxisId="favorites"
-									dataKey="favorites"
-									name="Δ Rispetto Barra Precedente"
-									radius={[4, 4, 0, 0]}
-									fill={'#ffda0c'}
-								/>
-							)}
-						</BarChart>
-					</ResponsiveContainer>
-				)}
-			</div>
-		</div>
+		</>
 	);
 };
 
