@@ -168,7 +168,7 @@ export default function Page() {
 						<h2 className="capitalize text-lg font-semibold leading-none row-span-1">
 							{key}
 						</h2>
-						<div className="grid grid-cols-1 auto-rows-fr size-fit gap-p min-w-2/3 px-3">
+						<div className="grid grid-cols-1 auto-rows-fr size-fit gap-p min-w-3/4 px-3">
 							{candidates.map((value, index) => (
 								<div
 									key={index}
