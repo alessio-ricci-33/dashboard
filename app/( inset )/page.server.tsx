@@ -9,5 +9,5 @@ export const getAll = async () => {
 	});
 
 	if (!success) throw new Error(rest.message);
-	return rest.data.slice(0, 6);
+	return rest.data;
 };
