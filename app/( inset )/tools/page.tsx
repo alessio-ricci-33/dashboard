@@ -37,6 +37,20 @@ export default function Page() {
 		[reveal, setReveal] = useState(-1);
 
 	useEffect(() => {
+		setResults({
+			tiktok: ['😳 Non Doveva Leggere Quello!', '😳 Non Doveva Leggere Quello!'],
+			youtube: [
+				'💌 Messaggio Alle 3 Di Notte Una conversazione',
+				'💌 Messaggio Alle 3 Di Notte Una conversazione',
+			],
+			instagram: [
+				'🔥 Ti Sfido A Guardarla Una chat',
+				'🔥 Ti Sfido A Guardarla Una chat',
+			],
+		});
+	}, []);
+
+	useEffect(() => {
 		const target = Math.max(...Object.values(results).map(x => x.length - 1));
 		if (target < 1) return;
 
@@ -161,9 +175,9 @@ export default function Page() {
 									className="group relative flex flex-row justify-between items-center row-span-1 size-full gap-p py-0 ">
 									{index > 0 && (
 										<Separator
-											data-reveal={reveal >= index}
+											data-reveal={reveal >= index - 1}
 											orientation="horizontal"
-											className="absolute -top-[var(--p)/2] left-0 w-full opacity-90 blur-[0px] data-[reveal=false]:opacity-0 data-[reveal=false]:blur-xs [transition-timing-function:cubic-bezier(0.4,0,.2,.4,1)] delay-200 duration-450 transition-[opacity,filter]"
+											className="absolute -top-[var(--p)/2] left-0 w-full [mask-image:radial-gradient(50%_50%_at_center,white,transparent)] opacity-100 blur-[0px] data-[reveal=false]:opacity-0 data-[reveal=false]:blur-xs [transition-timing-function:cubic-bezier(0.4,0,.2,.4,1)] delay-200 duration-450 transition-[opacity,filter]"
 										/>
 									)}
 									<Input
