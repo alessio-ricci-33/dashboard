@@ -91,8 +91,8 @@ export const genShortTitles = async ({
 		return await model({
 			model: modelName,
 			config: {
-				candidateCount: 3,
-				temperature: 1.1,
+				candidateCount: 5,
+				temperature: 0.93,
 				responseMimeType: 'text/plain',
 				systemInstruction: shortsTitles({ platform, tonality }),
 			},
