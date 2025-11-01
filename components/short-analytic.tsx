@@ -6,6 +6,7 @@ import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend, Cell
 
 import type { ShortType } from '@/models/schema/analytics/short';
 import { Separator } from '@/ui/separator';
+import Link from 'next/link';
 
 export const ShortAnalytic = ({
 	index,
@@ -39,14 +40,17 @@ export const ShortAnalytic = ({
 				data-reveal={reveal}
 				className="data-[reveal=true]:opacity-100 data-[reveal=false]:opacity-0 [transition-timing-function:cubic-bezier(0.4,0,.2,.4,1)] delay-500 duration-600 transition-opacity flex flex-row justify-between items-start size-full">
 				<div className="flex flex-row h-full gap-p">
-					<div className="relative h-full aspect-[9/16]">
+					<Link
+						target="_blank"
+						href={`https://www.youtube.com/watch?v=${short.videoId}`}
+						className="relative h-full aspect-[9/16]">
 						<Image
 							className="absolute !w-auto !h-full my-auto rounded-sm object-cover"
 							src={short.metadata.snippet.thumbnails.maxres.url}
 							alt={short.metadata.snippet.title}
 							fill
 						/>
-					</div>
+					</Link>
 					<div className="flex flex-col gap-[calc(var(--p)*.8)] [&_*]:!leading-none">
 						<span className="text-sm text-accent-foreground/60">
 							<p className="text-base text-foreground/90 inline capitalize">
