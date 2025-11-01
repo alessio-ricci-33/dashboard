@@ -1,7 +1,33 @@
 import withPWA from 'next-pwa';
+import CompressionPlugin from 'compression-webpack-plugin';
+
 import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
+	// webpack: (config, { isServer }) => {
+	// 	// Applica solo lato client (static assets)
+	// 	if (!isServer) {
+	// 		config.plugins.push(
+	// 			new CompressionPlugin({
+	// 				filename: '[path][base].gz',
+	// 				algorithm: 'gzip',
+	// 				test: /\.(js|css|html|webp|png|jpg|json)$/,
+	// 				compressionOptions: { level: 6 },
+	// 				threshold: 10240,
+	// 				minRatio: 0.8,
+	// 			}),
+	// 			new CompressionPlugin({
+	// 				filename: '[path][base].br',
+	// 				algorithm: 'brotliCompress',
+	// 				test: /\.(js|css|html|webp|png|jpg|json)$/,
+	// 				compressionOptions: { level: 6 },
+	// 				threshold: 10240,
+	// 				minRatio: 0.8,
+	// 			})
+	// 		);
+	// 	}
+	// 	return config;
+	// },
 	// add all url available in your app
 	images: {
 		remotePatterns: [

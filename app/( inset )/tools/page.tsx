@@ -42,11 +42,36 @@ export default function Page() {
 
 		(async () => {
 			for (let i = 0; i <= target; i++) {
-				await new Promise(r => setTimeout(r, 285));
+				await new Promise(r => setTimeout(r, 385));
 				setReveal(i);
 			}
 		})();
 	}, [results]);
+
+	// useEffect(() => {
+	// 	setResults({
+	// 		// dummy results
+	// 		// <emoji> <title>
+	// 		tiktok: [
+	// 			'😳 Non Doveva Leggere Quello!',
+	// 			'🔥 Ti Sfido A Guardarla Una chat così reale',
+	// 			'💌 Messaggio Alle 3 Di Notte',
+	// 			'💔 Ti Ha Lasciato Così?',
+	// 		],
+	// 		youtube: [
+	// 			'🔥 Ti Sfido A Guardarla Una chat così reale',
+	// 			'👀 Cosa Nasconde Davvero?',
+	// 			'😳 Non Doveva Leggere Quello!',
+	// 			'💌 Messaggio Alle 3 Di Notte',
+	// 		],
+	// 		instagram: [
+	// 			'💔 Ti Ha Lasciato Così?',
+	// 			'💌 Messaggio Alle 3 Di Notte',
+	// 			'😳 Non Doveva Leggere Quello!',
+	// 			'🔥 Ti Sfido A Guardarla Una chat così reale',
+	// 		],
+	// 	});
+	// }, []);
 
 	const handleCSVUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
 		const file = e.target.files?.[0];
@@ -161,9 +186,9 @@ export default function Page() {
 									className="group relative flex flex-row justify-between items-center row-span-1 size-full gap-p py-0 ">
 									{index > 0 && (
 										<Separator
-											data-reveal={reveal >= index}
+											data-reveal={reveal >= index - 1}
 											orientation="horizontal"
-											className="absolute -top-[var(--p)/2] left-0 w-full opacity-90 blur-[0px] data-[reveal=false]:opacity-0 data-[reveal=false]:blur-sm [transition-timing-function:cubic-bezier(0.4,0,.2,.4,1)] delay-250 duration-800 transition-[opacity,filter]"
+											className="absolute -top-[var(--p)/2] left-0 w-full [mask-image:radial-gradient(50%_50%_at_center,white,transparent)] opacity-100 blur-[0px] data-[reveal=false]:opacity-0 data-[reveal=false]:blur-xs [transition-timing-function:cubic-bezier(0.4,0,.2,.4,1)] delay-165 duration-400 transition-[opacity,filter]"
 										/>
 									)}
 									<Input
@@ -176,7 +201,7 @@ export default function Page() {
 												return { ...prev };
 											})
 										}
-										className="font-medium text-start text-foreground/85 size-full py-3 px-0 !bg-transparent !border-none !border-0 !ring-transparent !ring-0 !outline-none !focus-visible:outline-none !focus-visible:ring-0 !focus-visible:ring-transparent opacity-100 blur-[0px] data-[reveal=false]:opacity-0 data-[reveal=false]:blur-sm [transition-timing-function:cubic-bezier(0.4,0,.2,.4,1)] duration-850 transition-[opacity,filter]"
+										className="font-medium text-start text-foreground/85 size-full py-3 px-0 !bg-transparent !border-none !border-0 !ring-transparent !ring-0 !outline-none !focus-visible:outline-none !focus-visible:ring-0 !focus-visible:ring-transparent opacity-100 blur-[0px] data-[reveal=false]:opacity-0 data-[reveal=false]:blur-sm [transition-timing-function:cubic-bezier(0.4,0,.2,.4,1)] duration-650 transition-[opacity,filter]"
 									/>
 									<Button
 										variant="secondary"
@@ -184,7 +209,7 @@ export default function Page() {
 										onClick={() => handleCopy(value)}
 										title="Copia titolo"
 										data-reveal={reveal >= index}
-										className="group-hover:opacity-100 cursor-pointer h-full !bg-transparent !border-none !ring-none opacity-60 blur-[0px] data-[reveal=false]:opacity-0 data-[reveal=false]:blur-sm [transition-timing-function:cubic-bezier(0.4,0,.2,.4,1)] delay-165 duration-450 transition-[opacity,filter]">
+										className="group-hover:opacity-100 cursor-pointer h-full !bg-transparent !border-none !ring-none opacity-60 blur-[0px] data-[reveal=false]:opacity-0 data-[reveal=false]:blur-sm [transition-timing-function:cubic-bezier(0.4,0,.2,.4,1)] delay-135 duration-650 transition-[opacity,filter]">
 										<FiCopy size={18} />
 									</Button>
 								</div>
