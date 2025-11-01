@@ -36,19 +36,19 @@ export default function Page() {
 		),
 		[reveal, setReveal] = useState(-1);
 
-	useEffect(() => {
-		setResults({
-			tiktok: ['😳 Non Doveva Leggere Quello!', '😳 Non Doveva Leggere Quello!'],
-			youtube: [
-				'💌 Messaggio Alle 3 Di Notte Una conversazione',
-				'💌 Messaggio Alle 3 Di Notte Una conversazione',
-			],
-			instagram: [
-				'🔥 Ti Sfido A Guardarla Una chat',
-				'🔥 Ti Sfido A Guardarla Una chat',
-			],
-		});
-	}, []);
+	// useEffect(() => {
+	// 	setResults({
+	// 		tiktok: ['😳 Non Doveva Leggere Quello!', '😳 Non Doveva Leggere Quello!'],
+	// 		youtube: [
+	// 			'💌 Messaggio Alle 3 Di Notte Una conversazione',
+	// 			'💌 Messaggio Alle 3 Di Notte Una conversazione',
+	// 		],
+	// 		instagram: [
+	// 			'🔥 Ti Sfido A Guardarla Una chat',
+	// 			'🔥 Ti Sfido A Guardarla Una chat',
+	// 		],
+	// 	});
+	// }, []);
 
 	useEffect(() => {
 		const target = Math.max(...Object.values(results).map(x => x.length - 1));
