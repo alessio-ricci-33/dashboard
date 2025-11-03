@@ -201,7 +201,7 @@ export default () => {
 					))}
 				</div>
 			</div>
-			{/* <div className="grid auto-rows-fr w-full gap-[calc(var(--p)*2)]">
+			<div className="grid auto-rows-fr w-full gap-[calc(var(--p)*2)]">
 				{shorts.slice(0, 15).map((short, i) => (
 					<div className="relative size-full">
 						<ShortAnalytic
@@ -212,7 +212,7 @@ export default () => {
 						/>
 					</div>
 				))}
-			</div> */}
+			</div>
 		</div>
 	);
 };
