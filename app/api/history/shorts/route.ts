@@ -5,7 +5,7 @@ export const GET = async (req: Request) =>
 	await _try(async () => {
 		const ids = await Short.find({})
 			.sort({ 'metadata.snippet.publishedAt': -1 })
-			.limit(15)
+			.limit(120)
 			.lean();
 
 		return ids.map(short => {
