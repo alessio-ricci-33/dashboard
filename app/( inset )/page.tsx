@@ -190,7 +190,7 @@ export default () => {
 										style={{
 											backgroundColor: `rgba(var(--color),${score})`,
 										}}>
-										{score.toFixed(1)}
+										{Math.round(score * 100).toFixed(0)}
 									</div>
 								);
 							})}
@@ -249,7 +249,7 @@ export default () => {
 										style={{
 											backgroundColor: `rgba(var(--color),${score})`,
 										}}>
-										{score.toFixed(1)}
+										{Math.round(score * 100).toFixed(0)}
 									</div>
 								);
 							})}
