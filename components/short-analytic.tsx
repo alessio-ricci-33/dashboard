@@ -32,7 +32,7 @@ export const ShortAnalytic = ({
 			{index > 0 && (
 				<Separator
 					data-reveal={reveal}
-					className="absolute -top-p -left-p !w-[calc(var(--p)*2+100%)] opacity-90 data-[reveal=false]:opacity-0 [transition-timing-function:cubic-bezier(0.4,0,.2,.4,1)] duration-600 transition-opacity"
+					className="absolute -top-p -left-p [mask-image:radial-gradient(75%_50%_at_left,white,transparent)] !w-[calc(var(--p)*2+100%)] opacity-90 data-[reveal=false]:opacity-0 [transition-timing-function:cubic-bezier(0.4,0,.2,.4,1)] duration-600 transition-opacity"
 					orientation="horizontal"
 				/>
 			)}

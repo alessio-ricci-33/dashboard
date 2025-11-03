@@ -11,7 +11,7 @@ import { usePersistentState } from '@/hooks/usePersistentState';
 import { Input } from '@/ui/input';
 import { Button } from '@/ui/button';
 
-// import shorts_list from '@/constants/shorts.json';
+import shorts_list from '@/constants/shorts.json';
 
 export default () => {
 	const [shorts, setShorts] = useState([]),
@@ -20,8 +20,8 @@ export default () => {
 		[keys, setKeys] = usePersistentState('visible-keys', ['views'], 'local');
 
 	useEffect(() => {
-		// setShorts(shorts_list);
-		getAll().then(setShorts);
+		setShorts(shorts_list);
+		// getAll().then(setShorts);
 	}, []);
 
 	// --- Calcolo shorts validi ---
@@ -44,7 +44,7 @@ export default () => {
 
 	console.log(validShorts);
 
-	const heatmapData = useMemo(() => {
+	const heatmapTrend = useMemo(() => {
 		if (!validShorts.length) return [];
 
 		const now = new Date();
@@ -79,13 +79,57 @@ export default () => {
 		return matrix;
 	}, [validShorts, sliceCount, type]);
 
-	const maxTotal = useMemo(() => {
-		if (!heatmapData.length) return 0;
-		return heatmapData.reduce(
-			(total, day) => total + day.reduce((total, hour) => total + hour, 0),
-			0
-		);
-	}, [heatmapData]);
+	const heatmapAvg = useMemo(() => {
+		if (!validShorts.length) return [];
+
+		const now = new Date();
+		const matrix = Array.from({ length: 7 }, () => Array(24).fill(0));
+
+		validShorts.slice(0, sliceCount).forEach(short => {
+			const publishDate = new Date(short.metadata.snippet.publishedAt);
+
+			short.metricsHistory.forEach(metrics => {
+				const date = new Date(metrics.timestamp);
+				const day = date.getDay();
+				const hour = date.getHours();
+
+				const performance =
+					(metrics.views || 0) * 1 +
+					(metrics.likes || 0) * 0 +
+					(metrics.comments || 0) * 0;
+
+				if (type === 'avg') matrix[day][hour] += performance;
+				else matrix[day][hour] += performance;
+			});
+		});
+
+		const max = Math.max(...matrix.flat());
+		matrix.forEach(day => {
+			day.forEach((hour, i) => {
+				day[i] = Math.max(0, Math.min(1, Math.round((hour / max) * 10) / 10));
+			});
+		});
+		return matrix;
+	}, [validShorts, sliceCount, type]);
+
+	const { maxTrend, maxAvg } = useMemo(() => {
+		let maxTrend = 0,
+			maxAvg = 0;
+		if (!heatmapTrend.length) maxTrend = 0;
+		else
+			maxTrend = heatmapTrend.reduce(
+				(total, day) => total + day.reduce((total, hour) => total + hour, 0),
+				0
+			);
+		if (!heatmapAvg.length) maxAvg = 0;
+		else
+			maxAvg = heatmapAvg.reduce(
+				(total, day) => total + day.reduce((total, hour) => total + hour, 0),
+				0
+			);
+
+		return { maxTrend, maxAvg };
+	}, [heatmapTrend, heatmapAvg]);
 
 	const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
@@ -112,76 +156,131 @@ export default () => {
 						/>
 						shorts
 					</div>
-					<p className="text-foreground/60">|</p>
-
-					<Button
-						className="py-0.5 px-1 ml-1 size-fit rounded-sm"
-						onClick={() => SetType(type === 'trend' ? 'avg' : 'trend')}
-						variant={type === 'trend' ? 'default' : 'outline'}>
-						Trend
-					</Button>
 				</div>
-				<div className="grid grid-cols-[repeat(26,2rem)] grid-rows-[repeat(8,2rem)] gap-1 text-[10px] grid-flow-col">
-					<div className="grid grid-rows-subgrid grid-cols-1 row-span-full col-span-1 col-start-1 row-start-2 -row-end-1 size-full opacity-85">
-						{days.map(day => (
-							<div
-								key={'day' + day}
-								className="row-span-1 size-full text-left font-medium text-[.62rem] leading-none flex flex-col justify-center items-start">
-								{day}
-							</div>
-						))}
-					</div>
-
-					<div className="grid grid-rows-subgrid grid-cols-1 row-span-full col-span-1 col-start-2 row-start-1 -row-end-1 size-full ">
-						<div
-							key={'TOTAL'}
-							className="col-span-1 row-start-1 text-center font-medium text-[.67rem] flex flex-col justify-center items-center">
-							Tot.
-						</div>
-						{heatmapData.map((day, d) => {
-							const score =
-								day?.reduce((total, hour) => total + hour, 0) /
-								maxTotal;
-
-							return (
+				<div className="grid grid-cols-[1fr_1px_1fr] gap-p">
+					<div className="grid grid-cols-26 grid-rows-[repeat(8,1.75rem)] gap-1 text-[10px] grid-flow-col col-span-1 size-full">
+						<div className="grid grid-rows-subgrid grid-cols-1 row-span-full col-span-1 col-start-1 row-start-2 -row-end-1 size-full opacity-85">
+							{days.map(day => (
 								<div
-									className="col-span-1 row-span-1 size-full rounded-xs text-[.67rem] text-center font-bold leading-none flex justify-center items-center"
-									style={{
-										backgroundColor: `rgba(82,202,157,${score})`,
-									}}>
-									{score.toFixed(1)}
+									key={'day' + day}
+									className="row-span-1 size-full text-left font-medium text-[.62rem] leading-none flex flex-col justify-center items-start">
+									{day}
 								</div>
-							);
-						})}
-					</div>
-					<div className="grid grid-cols-subgrid grid-rows-1 col-start-3 -col-end-1 row-span-1 row-start-1 size-full grid-flow-col opacity-85">
-						{Array.from({ length: 24 }).map((_, h) => (
-							<div
-								key={'h' + h}
-								className="col-span-1 row-start-1 text-center font-medium text-[.67rem] flex flex-col justify-center items-center">
-								{h}
-							</div>
-						))}
-					</div>
+							))}
+						</div>
 
-					<div className="grid grid-rows-subgrid grid-cols-subgrid col-start-3 row-start-2 -col-end-1 row-span-full">
-						{days.map((day, d) =>
-							Array.from({ length: 24 }).map((_, h) => {
-								const opacity = heatmapData?.[d]?.[h] ?? 0;
+						<div className="grid grid-rows-subgrid grid-cols-1 row-span-full col-span-1 col-start-2 row-start-1 -row-end-1 size-full ">
+							<div
+								key={'TOTAL'}
+								className="col-span-1 row-start-1 text-center font-medium text-[.67rem] flex flex-col justify-center items-center">
+								Tot.
+							</div>
+							{heatmapTrend.map((day, d) => {
+								const score =
+									day?.reduce(
+										(total, hour) => total + hour,
+										0
+									) / maxTrend;
+
 								return (
 									<div
-										key={`${d}-${h}`}
-										className="col-span-1 row-span-1 size-full mx-auto rounded-xs"
+										className="col-span-1 row-span-1 size-full rounded-xs text-[.67rem] text-center font-bold leading-none flex justify-center items-center"
 										style={{
-											backgroundColor: `rgba(82,202,157,${opacity})`,
-										}}
-										title={`${day} ${h}:00 — Score: ${opacity.toFixed(
-											2
-										)}`}
-									/>
+											backgroundColor: `rgba(67,125,255,${score})`,
+										}}>
+										{score.toFixed(1)}
+									</div>
 								);
-							})
-						)}
+							})}
+						</div>
+						<div className="grid grid-cols-subgrid grid-rows-1 col-start-3 -col-end-1 row-span-1 row-start-1 size-full grid-flow-col opacity-85">
+							{Array.from({ length: 24 }).map((_, h) => (
+								<div
+									key={'h' + h}
+									className="col-span-1 row-start-1 text-center font-medium text-[.67rem] flex flex-col justify-center items-center">
+									{h}
+								</div>
+							))}
+						</div>
+
+						<div className="grid grid-rows-subgrid grid-cols-subgrid col-start-3 row-start-2 -col-end-1 row-span-full">
+							{days.map((day, d) =>
+								Array.from({ length: 24 }).map((_, h) => {
+									const opacity = heatmapTrend?.[d]?.[h] ?? 0;
+									return (
+										<div
+											key={`${d}-${h}`}
+											className="col-span-1 row-span-1 size-full mx-auto rounded-xs"
+											style={{
+												backgroundColor: `rgba(67,125,255,${opacity})`,
+											}}
+											title={`${day} ${h}:00 — Score: ${opacity.toFixed(
+												2
+											)}`}
+										/>
+									);
+								})
+							)}
+						</div>
+					</div>
+					<Separator
+						className="[mask-image:radial-gradient(50%_50%_at_center,white,transparent)]"
+						orientation="vertical"
+					/>
+					<div className="grid grid-cols-25 grid-rows-[repeat(8,1.75rem)] gap-1 text-[10px] grid-flow-col col-span-1 size-full mr-auto">
+						<div className="grid grid-rows-subgrid grid-cols-1 row-span-full col-span-1 col-start-1 row-start-1 -row-end-1 size-full ">
+							<div
+								key={'TOTAL'}
+								className="col-span-1 row-start-1 text-center font-medium text-[.67rem] flex flex-col justify-center items-center">
+								Tot.
+							</div>
+							{heatmapAvg.map((day, d) => {
+								const score =
+									day?.reduce(
+										(total, hour) => total + hour,
+										0
+									) / maxAvg;
+
+								return (
+									<div
+										className="col-span-1 row-span-1 size-full rounded-xs text-[.67rem] text-center font-bold leading-none flex justify-center items-center"
+										style={{
+											backgroundColor: `rgba(67,125,255,${score})`,
+										}}>
+										{score.toFixed(1)}
+									</div>
+								);
+							})}
+						</div>
+						<div className="grid grid-cols-subgrid grid-rows-1 col-start-2 -col-end-1 row-span-1 row-start-1 size-full grid-flow-col opacity-85">
+							{Array.from({ length: 24 }).map((_, h) => (
+								<div
+									key={'h' + h}
+									className="col-span-1 row-start-1 text-center font-medium text-[.67rem] flex flex-col justify-center items-center">
+									{h}
+								</div>
+							))}
+						</div>
+
+						<div className="grid grid-rows-subgrid grid-cols-subgrid col-start-2 row-start-2 -col-end-1 row-span-full">
+							{days.map((day, d) =>
+								Array.from({ length: 24 }).map((_, h) => {
+									const opacity = heatmapAvg?.[d]?.[h] ?? 0;
+									return (
+										<div
+											key={`${d}-${h}`}
+											className="col-span-1 row-span-1 size-full mx-auto rounded-xs aspect-square"
+											style={{
+												backgroundColor: `rgba(67,125,255,${opacity})`,
+											}}
+											title={`${day} ${h}:00 — Score: ${opacity.toFixed(
+												2
+											)}`}
+										/>
+									);
+								})
+							)}
+						</div>
 					</div>
 				</div>
 			</div>
