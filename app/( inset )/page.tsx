@@ -11,7 +11,7 @@ import { usePersistentState } from '@/hooks/usePersistentState';
 import { Input } from '@/ui/input';
 import { Button } from '@/ui/button';
 
-import shorts_list from '@/constants/shorts.json';
+// import shorts_list from '@/constants/shorts.json';
 
 export default () => {
 	const [shorts, setShorts] = useState([]),
@@ -20,8 +20,8 @@ export default () => {
 		[keys, setKeys] = usePersistentState('visible-keys', ['views'], 'local');
 
 	useEffect(() => {
-		setShorts(shorts_list);
-		// getAll().then(setShorts);
+		// setShorts(shorts_list);
+		getAll().then(setShorts);
 	}, []);
 
 	// --- Calcolo shorts validi ---
