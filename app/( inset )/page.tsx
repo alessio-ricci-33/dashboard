@@ -134,9 +134,9 @@ export default () => {
 	const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
 	return (
-		<div className="flex flex-col gap-p w-full px-p mb-40">
+		<div className="flex flex-col gap-5 w-full px-p mb-40">
 			{/* --- HEATMAP --- */}
-			<div className="w-full flex flex-col gap-2">
+			<div className="w-full flex flex-col gap-2 pb-3">
 				<div className="flex flex-row justify-start items-center gap-2.5">
 					<h2 className="text-lg font-semibold">Heatmap</h2>
 
@@ -157,13 +157,15 @@ export default () => {
 						shorts
 					</div>
 				</div>
-				<div className="grid grid-cols-[1fr_1px_1fr] gap-p">
-					<div className="grid grid-cols-26 grid-rows-[repeat(8,1.75rem)] gap-1 text-[10px] grid-flow-col col-span-1 size-full">
+				<div
+					style={{ '--color': '36,164,242' }}
+					className="grid grid-cols-[1fr_1px_1fr] gap-p overflow-hidden w-full">
+					<div className="grid grid-cols-26 grid-rows-8 gap-1 text-[10px] grid-flow-col col-span-1 size-full">
 						<div className="grid grid-rows-subgrid grid-cols-1 row-span-full col-span-1 col-start-1 row-start-2 -row-end-1 size-full opacity-85">
 							{days.map(day => (
 								<div
 									key={'day' + day}
-									className="row-span-1 size-full text-left font-medium text-[.62rem] leading-none flex flex-col justify-center items-start">
+									className="row-span-1 size-full text-left font-medium text-[.62rem] leading-none flex flex-col justify-center items-start aspect-square">
 									{day}
 								</div>
 							))}
@@ -172,7 +174,7 @@ export default () => {
 						<div className="grid grid-rows-subgrid grid-cols-1 row-span-full col-span-1 col-start-2 row-start-1 -row-end-1 size-full ">
 							<div
 								key={'TOTAL'}
-								className="col-span-1 row-start-1 text-center font-medium text-[.67rem] flex flex-col justify-center items-center">
+								className="col-span-1 row-start-1 text-center font-medium text-[.67rem] flex flex-col justify-center items-center aspect-square">
 								Tot.
 							</div>
 							{heatmapTrend.map((day, d) => {
@@ -184,9 +186,9 @@ export default () => {
 
 								return (
 									<div
-										className="col-span-1 row-span-1 size-full rounded-xs text-[.67rem] text-center font-bold leading-none flex justify-center items-center"
+										className="col-span-1 row-span-1 size-full rounded-xs text-[.67rem] text-center font-bold leading-none flex justify-center items-center aspect-square"
 										style={{
-											backgroundColor: `rgba(67,125,255,${score})`,
+											backgroundColor: `rgba(var(--color),${score})`,
 										}}>
 										{score.toFixed(1)}
 									</div>
@@ -197,7 +199,7 @@ export default () => {
 							{Array.from({ length: 24 }).map((_, h) => (
 								<div
 									key={'h' + h}
-									className="col-span-1 row-start-1 text-center font-medium text-[.67rem] flex flex-col justify-center items-center">
+									className="col-span-1 row-start-1 text-center font-medium text-[.67rem] flex flex-col justify-center items-center aspect-square">
 									{h}
 								</div>
 							))}
@@ -212,7 +214,7 @@ export default () => {
 											key={`${d}-${h}`}
 											className="col-span-1 row-span-1 size-full mx-auto rounded-xs"
 											style={{
-												backgroundColor: `rgba(67,125,255,${opacity})`,
+												backgroundColor: `rgba(var(--color),${opacity})`,
 											}}
 											title={`${day} ${h}:00 — Score: ${opacity.toFixed(
 												2
@@ -227,11 +229,11 @@ export default () => {
 						className="[mask-image:radial-gradient(50%_50%_at_center,white,transparent)]"
 						orientation="vertical"
 					/>
-					<div className="grid grid-cols-25 grid-rows-[repeat(8,1.75rem)] gap-1 text-[10px] grid-flow-col col-span-1 size-full mr-auto">
+					<div className="grid grid-cols-25 grid-rows-8 gap-1 text-[10px] grid-flow-col col-span-1 size-full mr-auto">
 						<div className="grid grid-rows-subgrid grid-cols-1 row-span-full col-span-1 col-start-1 row-start-1 -row-end-1 size-full ">
 							<div
 								key={'TOTAL'}
-								className="col-span-1 row-start-1 text-center font-medium text-[.67rem] flex flex-col justify-center items-center">
+								className="col-span-1 row-start-1 text-center font-medium text-[.67rem] flex flex-col justify-center items-center aspect-square">
 								Tot.
 							</div>
 							{heatmapAvg.map((day, d) => {
@@ -243,9 +245,9 @@ export default () => {
 
 								return (
 									<div
-										className="col-span-1 row-span-1 size-full rounded-xs text-[.67rem] text-center font-bold leading-none flex justify-center items-center"
+										className="col-span-1 row-span-1 size-full rounded-xs text-[.67rem] text-center font-bold leading-none flex justify-center items-center aspect-square"
 										style={{
-											backgroundColor: `rgba(67,125,255,${score})`,
+											backgroundColor: `rgba(var(--color),${score})`,
 										}}>
 										{score.toFixed(1)}
 									</div>
@@ -256,7 +258,7 @@ export default () => {
 							{Array.from({ length: 24 }).map((_, h) => (
 								<div
 									key={'h' + h}
-									className="col-span-1 row-start-1 text-center font-medium text-[.67rem] flex flex-col justify-center items-center">
+									className="col-span-1 row-start-1 text-center font-medium text-[.67rem] flex flex-col justify-center items-center aspect-square">
 									{h}
 								</div>
 							))}
@@ -271,7 +273,7 @@ export default () => {
 											key={`${d}-${h}`}
 											className="col-span-1 row-span-1 size-full mx-auto rounded-xs aspect-square"
 											style={{
-												backgroundColor: `rgba(67,125,255,${opacity})`,
+												backgroundColor: `rgba(var(--color),${opacity})`,
 											}}
 											title={`${day} ${h}:00 — Score: ${opacity.toFixed(
 												2
