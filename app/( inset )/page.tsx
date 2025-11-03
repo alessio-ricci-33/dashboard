@@ -86,12 +86,14 @@ export default () => {
 							value={sliceCount}
 							step={1}
 							onChange={e => setSliceCount(Number(e.target.value))}
-							className="inline mx-2 !size-fit !p-0 file:!w-fit border rounded-md text-center text-xs bg-transparent border-border"
+							className="inline mx-1 !size-fit !p-0 file:!w-fit border rounded-md text-center text-xs bg-transparent border-border"
 						/>
 						shorts
 					</div>
+					<p className="text-foreground/60">|</p>
 
 					<Button
+						className="py-0 px-0 ml-1"
 						onClick={() => SetType(type === 'trend' ? 'avg' : 'trend')}
 						variant={type === 'trend' ? 'default' : 'outline'}>
 						Trend
