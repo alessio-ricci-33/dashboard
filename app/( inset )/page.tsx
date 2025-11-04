@@ -18,11 +18,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/ui/tabs';
 
 export default () => {
 	const [shorts, setShorts] = useState([]),
-		[type, SetType] = usePersistentState<'delta' | 'normal'>(
-			'heatmap-mode',
-			'delta',
-			'local'
-		),
+		[type, SetType] = usePersistentState<'trend' | 'avg'>('heatmap-type', 'trend', 'local'),
 		[sliceCount, setSliceCount] = usePersistentState('heatmap-slice-count', 28, 'local'),
 		[keys, setKeys] = usePersistentState('visible-keys', ['views'], 'local');
 
@@ -30,6 +26,8 @@ export default () => {
 		// setShorts(shorts_list);
 		getAll().then(setShorts);
 	}, []);
+
+	console.log(shorts);
 
 	const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
@@ -55,16 +53,24 @@ export default () => {
 
 	const heatmap = useMemo(() => {
 		if (!validShorts.length)
-			return { maxTrend: 0, trend: new Map(), maxAvg: 0, avg: new Map() };
+			return {
+				deltaAvg: new Map(),
+				deltaTrend: new Map(),
+				maxTrend: 0,
+				trend: new Map(),
+				maxAvg: 0,
+				avg: new Map(),
+			};
 
 		const now = new Date();
 		const trendMatrix = new Map(days.map(day => [day, Array(24).fill(0) as number[]])),
 			avgMatrix = new Map(days.map(day => [day, Array(24).fill(0) as number[]]));
 
-		validShorts.slice(0, sliceCount).forEach(short => {
-			const publishDate = new Date(short.metadata.snippet.publishedAt);
-			const ageDays = Math.max((now - publishDate) / (1000 * 60 * 60 * 24), 1);
-			const weight = 1 / ageDays;
+		validShorts.slice(0, sliceCount).forEach((short, i) => {
+			// const publishDate = new Date(short.metadata.snippet.publishedAt);
+			// const ageDays = Math.max((now - publishDate) / (1000 * 60 * 60 * 24), 1);
+			// const weight = 1 / ageDays;
+			const weight = sliceCount - i;
 
 			short.metricsHistory.forEach(metrics => {
 				const date = new Date(metrics.timestamp);
@@ -83,85 +89,70 @@ export default () => {
 
 		const maxTrend = Math.max(...Array.from(trendMatrix.values()).flat()),
 			maxAvg = Math.max(...Array.from(avgMatrix.values()).flat());
+		const round = (num: number, step: number) => Math.round(num * step) / step;
 
-		if (type === 'delta') {
-			const round = (num: number, step: number) => Math.round(num * step) / step;
-			const deltaTrend = new Map(
-					Array.from(trendMatrix).map(([day, scores]) => [
-						day,
-						scores.map((score, i) =>
-							Math.max(
-								-1,
+		const deltaTrend = new Map(
+				Array.from(trendMatrix).map(([day, scores]) => [
+					day,
+					scores.map((score, i) =>
+						Math.max(
+							-1,
+							Math.min(
+								1,
+								round(score / maxTrend, 5) -
+									round(avgMatrix.get(day)![i] / maxAvg, 10)
+							)
+						)
+					),
+				])
+			),
+			deltaAvg = new Map(
+				Array.from(avgMatrix).map(([day, scores]) => [
+					day,
+					scores.map((score, i) =>
+						Math.max(
+							-1,
+							Math.min(
+								1,
 								Math.min(
 									1,
-									round(score / maxTrend, 5) -
+									round(score / maxAvg, 3) -
 										round(
-											avgMatrix.get(day)![i] / maxAvg,
-											10
+											trendMatrix.get(day)![i] /
+												maxTrend,
+											7
 										)
 								)
 							)
-						),
-					])
-				),
-				deltaAvg = new Map(
-					Array.from(avgMatrix).map(([day, scores]) => [
-						day,
-						scores.map((score, i) =>
-							Math.max(
-								-1,
-								Math.min(
-									1,
-									Math.min(
-										1,
-										round(score / maxAvg, 3) -
-											round(
-												trendMatrix.get(day)![i] /
-													maxTrend,
-												7
-											)
-									)
-								)
-							)
-						),
-					])
-				),
-				maxDeltaTrend = Math.max(
-					...Array.from(deltaTrend.values())
-						.flat()
-						.map(score => Math.abs(score))
-				),
-				maxDeltaAvg = Math.max(
-					...Array.from(deltaAvg.values())
-						.flat()
-						.map(score => Math.abs(score))
-				),
-				totDeltaTrend = deltaTrend
-					.values()
-					.reduce(
-						(total, scores) =>
-							total +
-							scores.reduce((tot, score) => tot + Math.abs(score), 0),
-						0
+						)
 					),
-				totDeltaAvg = deltaAvg
-					.values()
-					.reduce(
-						(total, scores) =>
-							total +
-							scores.reduce((tot, score) => tot + Math.abs(score), 0),
-						0
-					);
+				])
+			),
+			maxDeltaTrend = Math.max(
+				...Array.from(deltaTrend.values())
+					.flat()
+					.map(score => Math.abs(score))
+			),
+			maxDeltaAvg = Math.max(
+				...Array.from(deltaAvg.values())
+					.flat()
+					.map(score => Math.abs(score))
+			),
+			totDeltaTrend = deltaTrend
+				.values()
+				.reduce(
+					(total, scores) =>
+						total + scores.reduce((tot, score) => tot + Math.abs(score), 0),
+					0
+				),
+			totDeltaAvg = deltaAvg
+				.values()
+				.reduce(
+					(total, scores) =>
+						total + scores.reduce((tot, score) => tot + Math.abs(score), 0),
+					0
+				);
 
-			return {
-				maxTrend: maxDeltaTrend,
-				trend: deltaTrend,
-				maxAvg: maxDeltaAvg,
-				avg: deltaAvg,
-				totTrend: totDeltaTrend,
-				totAvg: totDeltaAvg,
-			};
-		}
 		const trend = new Map(
 				Array.from(trendMatrix).map(([day, scores]) => [
 					day,
@@ -196,9 +187,15 @@ export default () => {
 					0
 				);
 		return {
+			maxDeltaTrend,
+			totDeltaTrend,
+			deltaTrend,
 			maxTrend,
 			totTrend,
 			trend,
+			maxDeltaAvg,
+			totDeltaAvg,
+			deltaAvg,
 			maxAvg,
 			totAvg,
 			avg,
@@ -227,233 +224,598 @@ export default () => {
 
 			<div className="w-full flex flex-col gap-2 pb-3">
 				<Tabs
-					onValueChange={tabValue => SetType(tabValue)}
-					value={type}
-					className="shrink w-full ">
-					<TabsList>
-						<TabsTrigger value="Normal">Normal</TabsTrigger>
-						<TabsTrigger value="delta">Delta</TabsTrigger>
-					</TabsList>
-				</Tabs>
-				<div className="flex flex-row justify-start items-center gap-2.5 w-full">
-					<h2 className="text-lg font-semibold">Heatmap</h2>
-					{/* 🔢 Input per numero di shorts da considerare */}
-					<div className="shrink-0 flex items-center gap-2 text-sm text-foreground/85">
-						<p className="text-foreground/60">/</p>
-						Based on latest
-						<SliceInput
-							defaultValue={sliceCount}
-							validShorts={validShorts}
-							onHeavyProcess={setSliceCount}
-							className="inline mx-1 !size-fit !p-0 file:!w-fit border rounded-md text-center text-xs bg-transparent border-border"
-						/>
-						shorts
-					</div>
-				</div>
-				<div
 					style={{
 						'--color': '36,164,242',
 						'--negative': '252,54,95',
 						'--positive': '130,202,157',
 					}}
-					className="grid grid-cols-[1fr_1px_1fr] gap-p overflow-hidden w-full">
-					<div className="grid grid-cols-26 grid-rows-8 gap-1 text-[10px] grid-flow-col col-span-1 size-full">
-						<div className="grid grid-rows-subgrid grid-cols-1 row-span-full col-span-1 col-start-1 row-start-2 -row-end-1 size-full opacity-85">
-							{days.map(day => (
-								<div
-									key={'day' + day}
-									className="row-span-1 size-full text-left font-medium text-[.62rem] leading-none flex flex-col justify-center items-start aspect-square">
-									{day}
-								</div>
-							))}
+					onValueChange={tabValue => SetType(tabValue)}
+					value={type}
+					className="shrink w-full">
+					<div className="relative flex flex-row justify-start items-center gap-2.5 w-full">
+						<h2 className="text-lg font-semibold">Heatmap</h2>
+						{/* 🔢 Input per numero di shorts da considerare */}
+						<div className="shrink-0 flex items-center gap-2 text-sm text-foreground/85">
+							<p className="text-foreground/60">/</p>
+							Based on latest
+							<SliceInput
+								defaultValue={sliceCount}
+								validShorts={validShorts}
+								onHeavyProcess={setSliceCount}
+								className="inline mx-1 !size-fit !p-0 file:!w-fit border rounded-md text-center text-xs bg-transparent border-border"
+							/>
+							shorts
 						</div>
+						<TabsList className="absolute mx-auto inset-x-0 w-fit">
+							<TabsTrigger value="trend">Trend</TabsTrigger>
+							<TabsTrigger value="avg">Avg</TabsTrigger>
+						</TabsList>
+					</div>
 
-						<div className="grid grid-rows-subgrid grid-cols-1 row-span-full col-span-1 col-start-2 row-start-1 -row-end-1 size-full ">
-							<div
-								key={'TOTAL'}
-								className="col-span-1 row-start-1 text-center font-medium text-[.67rem] flex flex-col justify-center items-center aspect-square">
-								Tot.
-							</div>
-							{heatmap.trend.values().map(scores => {
-								let delta = 0;
-								const percent =
-									scores.reduce((total, score) => {
-										delta += score;
-										return total + Math.abs(score);
-									}, 0) / heatmap.totTrend;
+					<TabsContent value="trend">
+						<div className="grid grid-cols-[1fr_1px_1fr] gap-p overflow-hidden w-full">
+							<div className="grid grid-cols-28 grid-rows-8 gap-1 text-[10px] grid-flow-col col-span-1 size-full">
+								<div className="grid grid-rows-subgrid grid-cols-1 row-span-full col-span-1 col-start-1 row-start-2 -row-end-1 size-full opacity-85">
+									{days.map(day => (
+										<div
+											key={'day' + day}
+											className="row-span-1 size-full text-left font-medium text-[.62rem] leading-none flex flex-col justify-center items-start aspect-square">
+											{day}
+										</div>
+									))}
+								</div>
 
-								return (
+								<div className="grid grid-rows-subgrid grid-cols-3 row-span-full col-span-3 col-start-2 row-start-1 -row-end-1 size-full gap-[inherit]">
 									<div
-										className="col-span-1 row-span-1 size-full rounded-xs text-[.67rem] text-center font-bold leading-none flex justify-center items-center aspect-square"
-										style={{
-											backgroundColor:
-												type === 'delta'
-													? `rgba(var(--${
+										key={'TOTAL'}
+										className="col-span-1 row-start-1 text-center font-medium text-[.67rem] flex flex-col justify-center items-center aspect-square">
+										T. %
+									</div>
+									<div
+										key={'MIN'}
+										className="col-span-1 row-start-1 text-center font-medium text-[.67rem] flex flex-col justify-center items-center aspect-square">
+										Max
+									</div>
+									<div
+										key={'MAX'}
+										className="col-span-1 row-start-1 text-center font-medium text-[.67rem] flex flex-col justify-center items-center aspect-square">
+										Min
+									</div>
+
+									{heatmap.trend.values().map(scores => {
+										const percent =
+												scores.reduce(
+													(total, score) =>
+														total + score,
+
+													0
+												) / heatmap.totTrend,
+											min =
+												Math.min(...scores) /
+												heatmap.totTrend,
+											max =
+												Math.max(...scores) /
+												heatmap.totTrend;
+
+										return (
+											<>
+												<div
+													className="col-span-1 row-span-1 size-full rounded-xs text-[.67rem] text-center font-bold leading-none flex justify-center items-center aspect-square"
+													style={{
+														backgroundColor: `rgba(var(--color),${percent})`,
+													}}>
+													{Math.round(
+														percent * 100
+													).toFixed(0)}
+												</div>
+												<div
+													className="col-span-1 row-span-1 size-full rounded-xs text-[.67rem] text-center font-bold leading-none flex justify-center items-center aspect-square"
+													style={{
+														backgroundColor: `rgba(var(--color),${percent})`,
+													}}>
+													{(max * 100).toFixed(
+														0
+													)}
+												</div>
+												<div
+													className="col-span-1 row-span-1 size-full rounded-xs text-[.67rem] text-center font-bold leading-none flex justify-center items-center aspect-square"
+													style={{
+														backgroundColor: `rgba(var(--color),${percent})`,
+													}}>
+													{(min * 100).toFixed(
+														0
+													)}
+												</div>
+											</>
+										);
+									})}
+								</div>
+								<div className="grid grid-cols-subgrid grid-rows-1 col-start-5 -col-end-1 row-span-1 row-start-1 size-full grid-flow-col opacity-85">
+									{Array.from({ length: 18 }).map((_, h) => (
+										<div
+											key={'h' + h + 7}
+											className="col-span-1 row-start-1 text-center font-medium text-[.67rem] flex flex-col justify-center items-center aspect-square">
+											{h + 7}
+										</div>
+									))}
+									{Array.from({ length: 6 }).map((_, h) => (
+										<div
+											key={'h' + h + 1}
+											className="col-span-1 row-start-1 text-center font-medium text-[.67rem] flex flex-col justify-center items-center aspect-square">
+											{h + 1}
+										</div>
+									))}
+								</div>
+
+								<div className="grid grid-rows-subgrid grid-cols-subgrid col-start-5 row-start-2 -col-end-1 row-span-full">
+									{heatmap.trend
+										.entries()
+										.map(([day, scores]) =>
+											[
+												...scores
+													.slice(7)
+													.map((score, i) => ({
+														score,
+														hour: i + 7,
+													})),
+												...scores
+													.slice(0, 7)
+													.map((score, i) => ({
+														score,
+														hour: i + 1,
+													})),
+											].map(({ score, hour }) => {
+												return (
+													<div
+														key={`trend-${day}-${hour}`}
+														className="col-span-1 row-span-1 size-full mx-auto rounded-xs"
+														style={{
+															backgroundColor: `rgba(var(--color),${score})`,
+														}}
+														title={`${day} ${hour}:00 — Score: ${score.toFixed(
+															2
+														)}`}
+													/>
+												);
+											})
+										)}
+								</div>
+							</div>
+							<Separator
+								className="[mask-image:radial-gradient(50%_50%_at_center,white,transparent)]"
+								orientation="vertical"
+							/>
+							<div className="grid grid-cols-27 grid-rows-8 gap-1 text-[10px] grid-flow-col col-span-1 size-full mr-auto">
+								<div className="grid grid-rows-subgrid grid-cols-3 row-span-full col-span-3 col-start-1 row-start-1 -row-end-1 size-full gap-[inherit]">
+									<div
+										key={'TOTAL'}
+										className="col-span-1 row-start-1 text-center font-medium text-[.67rem] flex flex-col justify-center items-center aspect-square">
+										T. %
+									</div>
+									<div
+										key={'MIN'}
+										className="col-span-1 row-start-1 text-center font-medium text-[.67rem] flex flex-col justify-center items-center aspect-square">
+										Max
+									</div>
+									<div
+										key={'MAX'}
+										className="col-span-1 row-start-1 text-center font-medium text-[.67rem] flex flex-col justify-center items-center aspect-square">
+										Min
+									</div>
+
+									{heatmap.deltaTrend.values().map(scores => {
+										let delta = 0;
+										const percent =
+												scores.reduce(
+													(total, score) => {
+														delta += score;
+														return (
+															total +
+															Math.abs(
+																score
+															)
+														);
+													},
+													0
+												) / heatmap.totDeltaTrend,
+											min =
+												Math.min(...scores) /
+												heatmap.totDeltaTrend,
+											max =
+												Math.max(...scores) /
+												heatmap.totDeltaTrend;
+
+										return (
+											<>
+												<div
+													className="col-span-1 row-span-1 size-full rounded-xs text-[.67rem] text-center font-bold leading-none flex justify-center items-center aspect-square"
+													style={{
+														backgroundColor: `rgba(var(--${
 															delta < 0
 																? 'negative'
 																: 'positive'
-													  }),${percent})`
-													: `rgba(var(--color),${percent})`,
-										}}>
-										{Math.round(
-											percent * (delta < 0 ? -100 : 100)
-										).toFixed(0)}
-									</div>
-								);
-							})}
-						</div>
-						<div className="grid grid-cols-subgrid grid-rows-1 col-start-3 -col-end-1 row-span-1 row-start-1 size-full grid-flow-col opacity-85">
-							{Array.from({ length: 18 }).map((_, h) => (
-								<div
-									key={'h' + h + 7}
-									className="col-span-1 row-start-1 text-center font-medium text-[.67rem] flex flex-col justify-center items-center aspect-square">
-									{h + 7}
+														}),${percent})`,
+													}}>
+													{Math.round(
+														percent *
+															(delta < 0
+																? -100
+																: 100)
+													).toFixed(0)}
+												</div>
+												<div
+													className="col-span-1 row-span-1 size-full rounded-xs text-[.67rem] text-center font-bold leading-none flex justify-center items-center aspect-square"
+													style={{
+														backgroundColor: `rgba(var(--${
+															max < 0
+																? 'negative'
+																: 'positive'
+														}),${percent})`,
+													}}>
+													{(max * 100).toFixed(
+														0
+													)}
+												</div>
+												<div
+													className="col-span-1 row-span-1 size-full rounded-xs text-[.67rem] text-center font-bold leading-none flex justify-center items-center aspect-square"
+													style={{
+														backgroundColor: `rgba(var(--${
+															min < 0
+																? 'negative'
+																: 'positive'
+														}),${percent})`,
+													}}>
+													{(min * 100).toFixed(
+														0
+													)}
+												</div>
+											</>
+										);
+									})}
 								</div>
-							))}
-							{Array.from({ length: 6 }).map((_, h) => (
-								<div
-									key={'h' + h + 1}
-									className="col-span-1 row-start-1 text-center font-medium text-[.67rem] flex flex-col justify-center items-center aspect-square">
-									{h + 1}
-								</div>
-							))}
-						</div>
-
-						<div className="grid grid-rows-subgrid grid-cols-subgrid col-start-3 row-start-2 -col-end-1 row-span-full">
-							{heatmap.trend.entries().map(([day, scores]) =>
-								[
-									...scores.slice(7).map((score, i) => ({
-										score,
-										hour: i + 7,
-									})),
-									...scores.slice(0, 7).map((score, i) => ({
-										score,
-										hour: i + 1,
-									})),
-								].map(({ score, hour }) => {
-									const opacity = Math.abs(
-										score / heatmap.maxTrend
-									);
-
-									return (
+								<div className="grid grid-cols-subgrid grid-rows-1 col-start-4 -col-end-1 row-span-1 row-start-1 size-full grid-flow-col opacity-85">
+									{Array.from({ length: 18 }).map((_, h) => (
 										<div
-											key={`trend-${day}-${hour}`}
-											className="col-span-1 row-span-1 size-full mx-auto rounded-xs"
-											style={{
-												backgroundColor:
-													type === 'delta'
-														? `rgba(var(--${
+											key={'h' + h + 7}
+											className="col-span-1 row-start-1 text-center font-medium text-[.67rem] flex flex-col justify-center items-center aspect-square">
+											{h + 7}
+										</div>
+									))}
+									{Array.from({ length: 6 }).map((_, h) => (
+										<div
+											key={'h' + h + 1}
+											className="col-span-1 row-start-1 text-center font-medium text-[.67rem] flex flex-col justify-center items-center aspect-square">
+											{h + 1}
+										</div>
+									))}
+								</div>
+
+								<div className="grid grid-rows-subgrid grid-cols-subgrid col-start-4 row-start-2 -col-end-1 row-span-full">
+									{heatmap.deltaTrend
+										.entries()
+										.map(([day, scores]) =>
+											[
+												...scores
+													.slice(7)
+													.map((score, i) => ({
+														score,
+														hour: i + 7,
+													})),
+												...scores
+													.slice(0, 7)
+													.map((score, i) => ({
+														score,
+														hour: i + 1,
+													})),
+											].map(({ score, hour }) => {
+												const opacity = Math.abs(
+													score /
+														heatmap.maxDeltaTrend
+												);
+												return (
+													<div
+														key={`avg-${day}-${hour}`}
+														className="col-span-1 row-span-1 size-full mx-auto rounded-xs"
+														style={{
+															backgroundColor: `rgba(var(--${
 																score <
 																0
 																	? 'negative'
 																	: 'positive'
-														  }),${opacity})`
-														: `rgba(var(--color),${score})`,
-											}}
-											title={`${day} ${hour}:00 — Score: ${score.toFixed(
-												2
-											)}`}
-										/>
-									);
-								})
-							)}
-						</div>
-					</div>
-					<Separator
-						className="[mask-image:radial-gradient(50%_50%_at_center,white,transparent)]"
-						orientation="vertical"
-					/>
-					<div className="grid grid-cols-25 grid-rows-8 gap-1 text-[10px] grid-flow-col col-span-1 size-full mr-auto">
-						<div className="grid grid-rows-subgrid grid-cols-1 row-span-full col-span-1 col-start-1 row-start-1 -row-end-1 size-full ">
-							<div
-								key={'TOTAL'}
-								className="col-span-1 row-start-1 text-center font-medium text-[.67rem] flex flex-col justify-center items-center aspect-square">
-								Tot.
+															}),${opacity})`,
+														}}
+														title={`${day} ${hour}:00 — Score: ${score.toFixed(
+															2
+														)}`}
+													/>
+												);
+											})
+										)}
+								</div>
 							</div>
-							{heatmap.avg.values().map(scores => {
-								let delta = 0;
-								const percent =
-									scores.reduce((total, score) => {
-										delta += score;
-										return total + Math.abs(score);
-									}, 0) / heatmap.totAvg;
-								return (
+						</div>
+					</TabsContent>
+					<TabsContent value="avg">
+						<div className="grid grid-cols-[1fr_1px_1fr] gap-p overflow-hidden w-full">
+							<div className="grid grid-cols-28 grid-rows-8 gap-1 text-[10px] grid-flow-col col-span-1 size-full">
+								<div className="grid grid-rows-subgrid grid-cols-1 row-span-full col-span-1 col-start-1 row-start-2 -row-end-1 size-full opacity-85">
+									{days.map(day => (
+										<div
+											key={'day' + day}
+											className="row-span-1 size-full text-left font-medium text-[.62rem] leading-none flex flex-col justify-center items-start aspect-square">
+											{day}
+										</div>
+									))}
+								</div>
+
+								<div className="grid grid-rows-subgrid grid-cols-3 row-span-full col-span-3 col-start-2 row-start-1 -row-end-1 size-full gap-[inherit]">
 									<div
-										className="col-span-1 row-span-1 size-full rounded-xs text-[.67rem] text-center font-bold leading-none flex justify-center items-center aspect-square"
-										style={{
-											backgroundColor:
-												type === 'delta'
-													? `rgba(var(--${
+										key={'TOTAL'}
+										className="col-span-1 row-start-1 text-center font-medium text-[.67rem] flex flex-col justify-center items-center aspect-square">
+										T. %
+									</div>
+									<div
+										key={'MIN'}
+										className="col-span-1 row-start-1 text-center font-medium text-[.67rem] flex flex-col justify-center items-center aspect-square">
+										Max
+									</div>
+									<div
+										key={'MAX'}
+										className="col-span-1 row-start-1 text-center font-medium text-[.67rem] flex flex-col justify-center items-center aspect-square">
+										Min
+									</div>
+
+									{heatmap.avg.values().map(scores => {
+										const percent =
+												scores.reduce(
+													(total, score) =>
+														total + score,
+													0
+												) / heatmap.totAvg,
+											min =
+												Math.min(...scores) /
+												heatmap.totAvg,
+											max =
+												Math.max(...scores) /
+												heatmap.totAvg;
+
+										return (
+											<>
+												<div
+													className="col-span-1 row-span-1 size-full rounded-xs text-[.67rem] text-center font-bold leading-none flex justify-center items-center aspect-square"
+													style={{
+														backgroundColor: `rgba(var(--color),${percent})`,
+													}}>
+													{Math.round(
+														percent * 100
+													).toFixed(0)}
+												</div>
+												<div
+													className="col-span-1 row-span-1 size-full rounded-xs text-[.67rem] text-center font-bold leading-none flex justify-center items-center aspect-square"
+													style={{
+														backgroundColor: `rgba(var(--color),${percent})`,
+													}}>
+													{(max * 100).toFixed(
+														0
+													)}
+												</div>
+												<div
+													className="col-span-1 row-span-1 size-full rounded-xs text-[.67rem] text-center font-bold leading-none flex justify-center items-center aspect-square"
+													style={{
+														backgroundColor: `rgba(var(--color),${percent})`,
+													}}>
+													{(min * 100).toFixed(
+														0
+													)}
+												</div>
+											</>
+										);
+									})}
+								</div>
+								<div className="grid grid-cols-subgrid grid-rows-1 col-start-5 -col-end-1 row-span-1 row-start-1 size-full grid-flow-col opacity-85">
+									{Array.from({ length: 18 }).map((_, h) => (
+										<div
+											key={'h' + h + 7}
+											className="col-span-1 row-start-1 text-center font-medium text-[.67rem] flex flex-col justify-center items-center aspect-square">
+											{h + 7}
+										</div>
+									))}
+									{Array.from({ length: 6 }).map((_, h) => (
+										<div
+											key={'h' + h + 1}
+											className="col-span-1 row-start-1 text-center font-medium text-[.67rem] flex flex-col justify-center items-center aspect-square">
+											{h + 1}
+										</div>
+									))}
+								</div>
+
+								<div className="grid grid-rows-subgrid grid-cols-subgrid col-start-5 row-start-2 -col-end-1 row-span-full">
+									{heatmap.avg.entries().map(([day, scores]) =>
+										[
+											...scores
+												.slice(7)
+												.map((score, i) => ({
+													score,
+													hour: i + 7,
+												})),
+											...scores
+												.slice(0, 7)
+												.map((score, i) => ({
+													score,
+													hour: i + 1,
+												})),
+										].map(({ score, hour }) => {
+											return (
+												<div
+													key={`trend-${day}-${hour}`}
+													className="col-span-1 row-span-1 size-full mx-auto rounded-xs"
+													style={{
+														backgroundColor: `rgba(var(--color),${score})`,
+													}}
+													title={`${day} ${hour}:00 — Score: ${score.toFixed(
+														2
+													)}`}
+												/>
+											);
+										})
+									)}
+								</div>
+							</div>
+							<Separator
+								className="[mask-image:radial-gradient(50%_50%_at_center,white,transparent)]"
+								orientation="vertical"
+							/>
+							<div className="grid grid-cols-27 grid-rows-8 gap-1 text-[10px] grid-flow-col col-span-1 size-full mr-auto">
+								<div className="grid grid-rows-subgrid grid-cols-3 row-span-full col-span-3 col-start-1 row-start-1 -row-end-1 size-full gap-[inherit]">
+									<div
+										key={'TOTAL'}
+										className="col-span-1 row-start-1 text-center font-medium text-[.67rem] flex flex-col justify-center items-center aspect-square">
+										T. %
+									</div>
+									<div
+										key={'MIN'}
+										className="col-span-1 row-start-1 text-center font-medium text-[.67rem] flex flex-col justify-center items-center aspect-square">
+										Max
+									</div>
+									<div
+										key={'MAX'}
+										className="col-span-1 row-start-1 text-center font-medium text-[.67rem] flex flex-col justify-center items-center aspect-square">
+										Min
+									</div>
+
+									{heatmap.deltaAvg.values().map(scores => {
+										let delta = 0;
+										const percent =
+												scores.reduce(
+													(total, score) => {
+														delta += score;
+														return (
+															total +
+															Math.abs(
+																score
+															)
+														);
+													},
+													0
+												) / heatmap.totDeltaAvg,
+											min =
+												Math.min(...scores) /
+												heatmap.totDeltaAvg,
+											max =
+												Math.max(...scores) /
+												heatmap.totDeltaAvg;
+
+										return (
+											<>
+												<div
+													className="col-span-1 row-span-1 size-full rounded-xs text-[.67rem] text-center font-bold leading-none flex justify-center items-center aspect-square"
+													style={{
+														backgroundColor: `rgba(var(--${
 															delta < 0
 																? 'negative'
 																: 'positive'
-													  }),${percent})`
-													: `rgba(var(--color),${percent})`,
-										}}>
-										{Math.round(
-											percent * (delta < 0 ? -100 : 100)
-										).toFixed(0)}
-									</div>
-								);
-							})}
-						</div>
-						<div className="grid grid-cols-subgrid grid-rows-1 col-start-2 -col-end-1 row-span-1 row-start-1 size-full grid-flow-col opacity-85">
-							{Array.from({ length: 18 }).map((_, h) => (
-								<div
-									key={'h' + h + 7}
-									className="col-span-1 row-start-1 text-center font-medium text-[.67rem] flex flex-col justify-center items-center aspect-square">
-									{h + 7}
+														}),${percent})`,
+													}}>
+													{Math.round(
+														percent *
+															(delta < 0
+																? -100
+																: 100)
+													).toFixed(0)}
+												</div>
+												<div
+													className="col-span-1 row-span-1 size-full rounded-xs text-[.67rem] text-center font-bold leading-none flex justify-center items-center aspect-square"
+													style={{
+														backgroundColor: `rgba(var(--${
+															max < 0
+																? 'negative'
+																: 'positive'
+														}),${percent})`,
+													}}>
+													{(max * 100).toFixed(
+														0
+													)}
+												</div>
+												<div
+													className="col-span-1 row-span-1 size-full rounded-xs text-[.67rem] text-center font-bold leading-none flex justify-center items-center aspect-square"
+													style={{
+														backgroundColor: `rgba(var(--${
+															min < 0
+																? 'negative'
+																: 'positive'
+														}),${percent})`,
+													}}>
+													{(min * 100).toFixed(
+														0
+													)}
+												</div>
+											</>
+										);
+									})}
 								</div>
-							))}
-							{Array.from({ length: 6 }).map((_, h) => (
-								<div
-									key={'h' + h + 1}
-									className="col-span-1 row-start-1 text-center font-medium text-[.67rem] flex flex-col justify-center items-center aspect-square">
-									{h + 1}
-								</div>
-							))}
-						</div>
-
-						<div className="grid grid-rows-subgrid grid-cols-subgrid col-start-2 row-start-2 -col-end-1 row-span-full">
-							{heatmap.avg.entries().map(([day, scores]) =>
-								[
-									...scores.slice(7).map((score, i) => ({
-										score,
-										hour: i + 7,
-									})),
-									...scores.slice(0, 7).map((score, i) => ({
-										score,
-										hour: i + 1,
-									})),
-								].map(({ score, hour }) => {
-									const opacity = Math.abs(
-										score / heatmap.maxAvg
-									);
-									return (
+								<div className="grid grid-cols-subgrid grid-rows-1 col-start-4 -col-end-1 row-span-1 row-start-1 size-full grid-flow-col opacity-85">
+									{Array.from({ length: 18 }).map((_, h) => (
 										<div
-											key={`avg-${day}-${hour}`}
-											className="col-span-1 row-span-1 size-full mx-auto rounded-xs"
-											style={{
-												backgroundColor:
-													type === 'delta'
-														? `rgba(var(--${
+											key={'h' + h + 7}
+											className="col-span-1 row-start-1 text-center font-medium text-[.67rem] flex flex-col justify-center items-center aspect-square">
+											{h + 7}
+										</div>
+									))}
+									{Array.from({ length: 6 }).map((_, h) => (
+										<div
+											key={'h' + h + 1}
+											className="col-span-1 row-start-1 text-center font-medium text-[.67rem] flex flex-col justify-center items-center aspect-square">
+											{h + 1}
+										</div>
+									))}
+								</div>
+
+								<div className="grid grid-rows-subgrid grid-cols-subgrid col-start-4 row-start-2 -col-end-1 row-span-full">
+									{heatmap.deltaAvg
+										.entries()
+										.map(([day, scores]) =>
+											[
+												...scores
+													.slice(7)
+													.map((score, i) => ({
+														score,
+														hour: i + 7,
+													})),
+												...scores
+													.slice(0, 7)
+													.map((score, i) => ({
+														score,
+														hour: i + 1,
+													})),
+											].map(({ score, hour }) => {
+												const opacity = Math.abs(
+													score /
+														heatmap.maxDeltaAvg
+												);
+												return (
+													<div
+														key={`avg-${day}-${hour}`}
+														className="col-span-1 row-span-1 size-full mx-auto rounded-xs"
+														style={{
+															backgroundColor: `rgba(var(--${
 																score <
 																0
 																	? 'negative'
 																	: 'positive'
-														  }),${opacity})`
-														: `rgba(var(--color),${score})`,
-											}}
-											title={`${day} ${hour}:00 — Score: ${score.toFixed(
-												2
-											)}`}
-										/>
-									);
-								})
-							)}
+															}),${opacity})`,
+														}}
+														title={`${day} ${hour}:00 — Score: ${score.toFixed(
+															2
+														)}`}
+													/>
+												);
+											})
+										)}
+								</div>
+							</div>
 						</div>
-					</div>
-				</div>
+					</TabsContent>
+				</Tabs>
 			</div>
 			<Separator className="[mask-image:radial-gradient(50%_50%_at_center,white,transparent)]" />
 			<div className="flex flex-row justify-between items-center gap-[calc(var(--p)*2)]">
