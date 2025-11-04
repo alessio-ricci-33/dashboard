@@ -1,28 +1,31 @@
-'use client';
-import { useEffect, useMemo, useState } from 'react';
-import { Separator } from '@/ui/separator';
-import { ShortAnalytic } from '@/components/short-analytic';
-import { Checkbox } from '@/ui/checkbox';
+"use client";
+import { useEffect, useMemo, useState } from "react";
+import { Separator } from "@/ui/separator";
+import { ShortAnalytic } from "@/components/short-analytic";
+import { Checkbox } from "@/ui/checkbox";
 
-import { getAll } from './page.server';
-import { Label } from '@/ui/label';
-import { cn } from '@/utils/shadcn';
-import { usePersistentState } from '@/hooks/usePersistentState';
-import { Input } from '@/ui/input';
-import { Button } from '@/ui/button';
+import { getAll } from "./page.server";
+import { Label } from "@/ui/label";
+import { cn } from "@/utils/shadcn";
+import { usePersistentState } from "@/hooks/usePersistentState";
+import { Input } from "@/ui/input";
+import { Button } from "@/ui/button";
+import SliceInput from "@/components/SliceInput";
 
-// import shorts_list from '@/constants/shorts.json';
+// import shorts_list from "@/constants/shorts.json";
 
 export default () => {
 	const [shorts, setShorts] = useState([]),
-		[type, SetType] = usePersistentState<'trend' | 'avg'>('heatmap-type', 'trend', 'local'),
-		[sliceCount, setSliceCount] = usePersistentState('heatmap-slice-count', 60, 'local'),
-		[keys, setKeys] = usePersistentState('visible-keys', ['views'], 'local');
+		[type, SetType] = usePersistentState<"trend" | "avg">("heatmap-type", "trend", "local"),
+		[sliceCount, setSliceCount] = usePersistentState("heatmap-slice-count", 60, "local"),
+		[keys, setKeys] = usePersistentState("visible-keys", ["views"], "local");
 
 	useEffect(() => {
 		// setShorts(shorts_list);
 		getAll().then(setShorts);
 	}, []);
+
+	const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
 	// --- Calcolo shorts validi ---
 	const validShorts = useMemo(() => {
@@ -36,7 +39,7 @@ export default () => {
 		startOfWeek.setHours(0, 0, 0, 0);
 
 		// ✅ Escludi shorts pubblicati nella settimana corrente
-		return shorts.filter(short => {
+		return shorts.filter((short) => {
 			const publishDate = new Date(short.metadata.snippet.publishedAt);
 			return publishDate < startOfWeek;
 		});
@@ -44,94 +47,59 @@ export default () => {
 
 	console.log(validShorts);
 
-	const heatmapTrend = useMemo(() => {
-		if (!validShorts.length) return [];
+	const heatmap = useMemo(() => {
+		if (!validShorts.length) return { maxTrend: 0, trend: new Map(), maxAvg: 0, avg: new Map() };
 
 		const now = new Date();
-		const matrix = Array.from({ length: 7 }, () => Array(24).fill(0));
+		const trendMatrix = new Map(days.map((day) => [day, Array(24).fill(0) as number[]])),
+			avgMatrix = new Map(days.map((day) => [day, Array(24).fill(0) as number[]]));
 
-		validShorts.slice(0, sliceCount).forEach(short => {
+		validShorts.slice(0, sliceCount).forEach((short) => {
 			const publishDate = new Date(short.metadata.snippet.publishedAt);
 			const ageDays = Math.max((now - publishDate) / (1000 * 60 * 60 * 24), 1);
 			const weight = 1 / ageDays;
 
-			short.metricsHistory.forEach(metrics => {
+			short.metricsHistory.forEach((metrics) => {
 				const date = new Date(metrics.timestamp);
-				const day = date.getDay();
+				const day = date.toLocaleDateString("en-US", { weekday: "short" });
 				const hour = date.getHours();
 
 				const performance =
-					(metrics.views || 0) * 1 +
-					(metrics.likes || 0) * 0 +
-					(metrics.comments || 0) * 0;
+					(metrics.views || 0) * 1 + (metrics.likes || 0) * 0 + (metrics.comments || 0) * 0;
 
-				if (type === 'avg') matrix[day][hour] += performance;
-				else matrix[day][hour] += performance * weight;
+				trendMatrix.get(day)![hour] += performance * weight;
+				avgMatrix.get(day)![hour] += performance;
 			});
 		});
 
-		const max = Math.max(...matrix.flat());
-		matrix.forEach(day => {
-			day.forEach((hour, i) => {
-				day[i] = Math.max(0, Math.min(1, Math.round((hour / max) * 10) / 10));
-			});
-		});
-		return matrix;
-	}, [validShorts, sliceCount, type]);
+		const maxTrend = Math.max(...Array.from(trendMatrix.values()).flat()),
+			maxAvg = Math.max(...Array.from(avgMatrix.values()).flat()),
+			trend = new Map(
+				Array.from(trendMatrix).map(([day, scores]) => [
+					day,
+					scores.map((score) => Math.max(0, Math.min(1, Math.round((score / maxTrend) * 10) / 10))),
+				])
+			),
+			totTrend = trend
+				.values()
+				.reduce((total, scores) => total + scores.reduce((tot, score) => tot + score, 0), 0),
+			avg = new Map(
+				Array.from(avgMatrix).map(([day, scores]) => [
+					day,
+					scores.map((score) => Math.max(0, Math.min(1, Math.round((score / maxAvg) * 10) / 10))),
+				])
+			),
+			totAvg = avg.values().reduce((total, scores) => total + scores.reduce((tot, score) => tot + score, 0), 0);
 
-	const heatmapAvg = useMemo(() => {
-		if (!validShorts.length) return [];
-
-		const now = new Date();
-		const matrix = Array.from({ length: 7 }, () => Array(24).fill(0));
-
-		validShorts.slice(0, sliceCount).forEach(short => {
-			const publishDate = new Date(short.metadata.snippet.publishedAt);
-
-			short.metricsHistory.forEach(metrics => {
-				const date = new Date(metrics.timestamp);
-				const day = date.getDay();
-				const hour = date.getHours();
-
-				const performance =
-					(metrics.views || 0) * 1 +
-					(metrics.likes || 0) * 0 +
-					(metrics.comments || 0) * 0;
-
-				if (type === 'avg') matrix[day][hour] += performance;
-				else matrix[day][hour] += performance;
-			});
-		});
-
-		const max = Math.max(...matrix.flat());
-		matrix.forEach(day => {
-			day.forEach((hour, i) => {
-				day[i] = Math.max(0, Math.min(1, Math.round((hour / max) * 10) / 10));
-			});
-		});
-		return matrix;
-	}, [validShorts, sliceCount, type]);
-
-	const { maxTrend, maxAvg } = useMemo(() => {
-		let maxTrend = 0,
-			maxAvg = 0;
-		if (!heatmapTrend.length) maxTrend = 0;
-		else
-			maxTrend = heatmapTrend.reduce(
-				(total, day) => total + day.reduce((total, hour) => total + hour, 0),
-				0
-			);
-		if (!heatmapAvg.length) maxAvg = 0;
-		else
-			maxAvg = heatmapAvg.reduce(
-				(total, day) => total + day.reduce((total, hour) => total + hour, 0),
-				0
-			);
-
-		return { maxTrend, maxAvg };
-	}, [heatmapTrend, heatmapAvg]);
-
-	const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+		return {
+			maxTrend,
+			totTrend,
+			trend,
+			maxAvg,
+			totAvg,
+			avg,
+		};
+	}, [validShorts, sliceCount]);
 
 	return (
 		<div className="flex flex-col gap-5 w-full px-p mb-40">
@@ -144,28 +112,26 @@ export default () => {
 					<div className="flex items-center gap-2 text-sm text-foreground/85">
 						<p className="text-foreground/60">/</p>
 						Based on latest
-						<Input
-							id="sliceCount"
-							type="number"
-							min={1}
-							max={validShorts.length}
-							value={sliceCount}
-							step={1}
-							onChange={e => setSliceCount(Number(e.target.value))}
+						<SliceInput
+							defaultValue={sliceCount}
+							validShorts={validShorts}
+							onHeavyProcess={setSliceCount}
 							className="inline mx-1 !size-fit !p-0 file:!w-fit border rounded-md text-center text-xs bg-transparent border-border"
 						/>
 						shorts
 					</div>
 				</div>
 				<div
-					style={{ '--color': '36,164,242' }}
-					className="grid grid-cols-[1fr_1px_1fr] gap-p overflow-hidden w-full">
+					style={{ "--color": "36,164,242" }}
+					className="grid grid-cols-[1fr_1px_1fr] gap-p overflow-hidden w-full"
+				>
 					<div className="grid grid-cols-26 grid-rows-8 gap-1 text-[10px] grid-flow-col col-span-1 size-full">
 						<div className="grid grid-rows-subgrid grid-cols-1 row-span-full col-span-1 col-start-1 row-start-2 -row-end-1 size-full opacity-85">
-							{days.map(day => (
+							{days.map((day) => (
 								<div
-									key={'day' + day}
-									className="row-span-1 size-full text-left font-medium text-[.62rem] leading-none flex flex-col justify-center items-start aspect-square">
+									key={"day" + day}
+									className="row-span-1 size-full text-left font-medium text-[.62rem] leading-none flex flex-col justify-center items-start aspect-square"
+								>
 									{day}
 								</div>
 							))}
@@ -173,50 +139,65 @@ export default () => {
 
 						<div className="grid grid-rows-subgrid grid-cols-1 row-span-full col-span-1 col-start-2 row-start-1 -row-end-1 size-full ">
 							<div
-								key={'TOTAL'}
-								className="col-span-1 row-start-1 text-center font-medium text-[.67rem] flex flex-col justify-center items-center aspect-square">
+								key={"TOTAL"}
+								className="col-span-1 row-start-1 text-center font-medium text-[.67rem] flex flex-col justify-center items-center aspect-square"
+							>
 								Tot.
 							</div>
-							{heatmapTrend.map((day, d) => {
+							{heatmap.trend.entries().map(([day, scores]) => {
 								const score =
-									day?.reduce(
-										(total, hour) => total + hour,
-										0
-									) / maxTrend;
+									scores.reduce((total, hour) => total + hour, 0) /
+									heatmap.totTrend;
 
 								return (
 									<div
 										className="col-span-1 row-span-1 size-full rounded-xs text-[.67rem] text-center font-bold leading-none flex justify-center items-center aspect-square"
 										style={{
 											backgroundColor: `rgba(var(--color),${score})`,
-										}}>
+										}}
+									>
 										{Math.round(score * 100).toFixed(0)}
 									</div>
 								);
 							})}
 						</div>
 						<div className="grid grid-cols-subgrid grid-rows-1 col-start-3 -col-end-1 row-span-1 row-start-1 size-full grid-flow-col opacity-85">
-							{Array.from({ length: 24 }).map((_, h) => (
+							{Array.from({ length: 18 }).map((_, h) => (
 								<div
-									key={'h' + h}
-									className="col-span-1 row-start-1 text-center font-medium text-[.67rem] flex flex-col justify-center items-center aspect-square">
-									{h}
+									key={"h" + h + 7}
+									className="col-span-1 row-start-1 text-center font-medium text-[.67rem] flex flex-col justify-center items-center aspect-square"
+								>
+									{h + 7}
+								</div>
+							))}
+							{Array.from({ length: 6 }).map((_, h) => (
+								<div
+									key={"h" + h + 1}
+									className="col-span-1 row-start-1 text-center font-medium text-[.67rem] flex flex-col justify-center items-center aspect-square"
+								>
+									{h + 1}
 								</div>
 							))}
 						</div>
 
 						<div className="grid grid-rows-subgrid grid-cols-subgrid col-start-3 row-start-2 -col-end-1 row-span-full">
-							{days.map((day, d) =>
-								Array.from({ length: 24 }).map((_, h) => {
-									const opacity = heatmapTrend?.[d]?.[h] ?? 0;
+							{heatmap.trend.entries().map(([day, scores]) =>
+								[
+									...scores
+										.slice(7)
+										.map((score, i) => ({ score, hour: i + 7 })),
+									...scores
+										.slice(0, 7)
+										.map((score, i) => ({ score, hour: i + 1 })),
+								].map(({ score, hour }, h) => {
 									return (
 										<div
-											key={`${d}-${h}`}
+											key={`${day}-${hour}`}
 											className="col-span-1 row-span-1 size-full mx-auto rounded-xs"
 											style={{
-												backgroundColor: `rgba(var(--color),${opacity})`,
+												backgroundColor: `rgba(var(--color),${score})`,
 											}}
-											title={`${day} ${h}:00 — Score: ${opacity.toFixed(
+											title={`${day} ${hour}:00 — Score: ${score.toFixed(
 												2
 											)}`}
 										/>
@@ -232,50 +213,65 @@ export default () => {
 					<div className="grid grid-cols-25 grid-rows-8 gap-1 text-[10px] grid-flow-col col-span-1 size-full mr-auto">
 						<div className="grid grid-rows-subgrid grid-cols-1 row-span-full col-span-1 col-start-1 row-start-1 -row-end-1 size-full ">
 							<div
-								key={'TOTAL'}
-								className="col-span-1 row-start-1 text-center font-medium text-[.67rem] flex flex-col justify-center items-center aspect-square">
+								key={"TOTAL"}
+								className="col-span-1 row-start-1 text-center font-medium text-[.67rem] flex flex-col justify-center items-center aspect-square"
+							>
 								Tot.
 							</div>
-							{heatmapAvg.map((day, d) => {
+							{heatmap.avg.entries().map(([day, scores]) => {
 								const score =
-									day?.reduce(
-										(total, hour) => total + hour,
-										0
-									) / maxAvg;
+									scores.reduce((total, hour) => total + hour, 0) /
+									heatmap.totAvg;
 
 								return (
 									<div
 										className="col-span-1 row-span-1 size-full rounded-xs text-[.67rem] text-center font-bold leading-none flex justify-center items-center aspect-square"
 										style={{
 											backgroundColor: `rgba(var(--color),${score})`,
-										}}>
+										}}
+									>
 										{Math.round(score * 100).toFixed(0)}
 									</div>
 								);
 							})}
 						</div>
 						<div className="grid grid-cols-subgrid grid-rows-1 col-start-2 -col-end-1 row-span-1 row-start-1 size-full grid-flow-col opacity-85">
-							{Array.from({ length: 24 }).map((_, h) => (
+							{Array.from({ length: 18 }).map((_, h) => (
 								<div
-									key={'h' + h}
-									className="col-span-1 row-start-1 text-center font-medium text-[.67rem] flex flex-col justify-center items-center aspect-square">
-									{h}
+									key={"h" + h + 7}
+									className="col-span-1 row-start-1 text-center font-medium text-[.67rem] flex flex-col justify-center items-center aspect-square"
+								>
+									{h + 7}
+								</div>
+							))}
+							{Array.from({ length: 6 }).map((_, h) => (
+								<div
+									key={"h" + h + 1}
+									className="col-span-1 row-start-1 text-center font-medium text-[.67rem] flex flex-col justify-center items-center aspect-square"
+								>
+									{h + 1}
 								</div>
 							))}
 						</div>
 
 						<div className="grid grid-rows-subgrid grid-cols-subgrid col-start-2 row-start-2 -col-end-1 row-span-full">
-							{days.map((day, d) =>
-								Array.from({ length: 24 }).map((_, h) => {
-									const opacity = heatmapAvg?.[d]?.[h] ?? 0;
+							{heatmap.avg.entries().map(([day, scores]) =>
+								[
+									...scores
+										.slice(7)
+										.map((score, i) => ({ score, hour: i + 7 })),
+									...scores
+										.slice(0, 7)
+										.map((score, i) => ({ score, hour: i + 1 })),
+								].map(({ score, hour }, h) => {
 									return (
 										<div
-											key={`${d}-${h}`}
-											className="col-span-1 row-span-1 size-full mx-auto rounded-xs aspect-square"
+											key={`${day}-${hour}`}
+											className="col-span-1 row-span-1 size-full mx-auto rounded-xs"
 											style={{
-												backgroundColor: `rgba(var(--color),${opacity})`,
+												backgroundColor: `rgba(var(--color),${score})`,
 											}}
-											title={`${day} ${h}:00 — Score: ${opacity.toFixed(
+											title={`${day} ${hour}:00 — Score: ${score.toFixed(
 												2
 											)}`}
 										/>
@@ -292,54 +288,51 @@ export default () => {
 				<div className="flex flex-row gap-p w-fit">
 					{[
 						{
-							key: 'views',
-							label: 'Views',
-							className: 'bg-[#82ca9d]/35 border border-[#82ca9d]/50',
+							key: "views",
+							label: "Views",
+							className: "bg-[#82ca9d]/35 border border-[#82ca9d]/50",
 							checkBoxProps: {
-								className:
-									'rounded-full contrast-111 border border-accent data-[state=checked]:bg-[#82ca9d] data-[state=checked]:text-white bg-[#82ca9d]/35',
+								className: "rounded-full contrast-111 border border-accent data-[state=checked]:bg-[#82ca9d] data-[state=checked]:text-white bg-[#82ca9d]/35",
 							},
 						},
 						{
-							key: 'likes',
-							label: 'Likes',
-							className: 'bg-[#fc365f]/35 border border-[#fc365f]/50',
+							key: "likes",
+							label: "Likes",
+							className: "bg-[#fc365f]/35 border border-[#fc365f]/50",
 							checkBoxProps: {
-								className:
-									'rounded-full contrast-111 border border-accent data-[state=checked]:bg-[#fc365f] data-[state=checked]:text-white bg-[#fc365f]/35',
+								className: "rounded-full contrast-111 border border-accent data-[state=checked]:bg-[#fc365f] data-[state=checked]:text-white bg-[#fc365f]/35",
 							},
 						},
 						{
-							key: 'comments',
-							label: 'Comments',
-							className: 'bg-[#3ea6ff]/35 border border-[#3ea6ff]/50',
+							key: "comments",
+							label: "Comments",
+							className: "bg-[#3ea6ff]/35 border border-[#3ea6ff]/50",
 							checkBoxProps: {
-								className:
-									'rounded-full contrast-111 border border-accent data-[state=checked]:bg-[#3ea6ff] data-[state=checked]:text-white bg-[#3ea6ff]/35',
+								className: "rounded-full contrast-111 border border-accent data-[state=checked]:bg-[#3ea6ff] data-[state=checked]:text-white bg-[#3ea6ff]/35",
 							},
 						},
 						{
-							key: 'favorites',
-							label: 'Favorites',
-							className: 'bg-[#ffda0c]/35 border border-[#ffda0c]/50',
+							key: "favorites",
+							label: "Favorites",
+							className: "bg-[#ffda0c]/35 border border-[#ffda0c]/50",
 							checkBoxProps: {
-								className:
-									'rounded-full contrast-111 border border-accent data-[state=checked]:bg-[#ffda0c] data-[state=checked]:text-white bg-[#ffda0c]/35',
+								className: "rounded-full contrast-111 border border-accent data-[state=checked]:bg-[#ffda0c] data-[state=checked]:text-white bg-[#ffda0c]/35",
 							},
 						},
 					].map(({ key, label, className, checkBoxProps }, index) => (
 						<Label
-							key={index + 'label'}
+							key={index + "label"}
 							className={cn(
-								'flex flex-row items-center gap-2 py-1.25 pl-1.5 pr-3 rounded-xl opacity-85 has-[[data-state=checked]]:opacity-100 font-secondary text-xs leading-none tracking-wide select-none',
+								"flex flex-row items-center gap-2 py-1.25 pl-1.5 pr-3 rounded-xl opacity-85 has-[[data-state=checked]]:opacity-100 font-secondary text-xs leading-none tracking-wide select-none",
 								className
-							)}>
+							)}
+						>
 							<Checkbox
 								key={index}
 								checked={keys.includes(key)}
-								onCheckedChange={checked => {
+								onCheckedChange={(checked) => {
 									if (checked) setKeys([...keys, key]);
-									else setKeys(keys.filter(k => k !== key));
+									else setKeys(keys.filter((k) => k !== key));
 								}}
 								{...checkBoxProps}
 							/>
@@ -351,12 +344,7 @@ export default () => {
 			<div className="grid auto-rows-fr w-full gap-[calc(var(--p)*2)]">
 				{shorts.slice(0, 15).map((short, i) => (
 					<div className="relative size-full">
-						<ShortAnalytic
-							key={i}
-							visibleKeys={keys}
-							index={i}
-							{...short}
-						/>
+						<ShortAnalytic key={i} visibleKeys={keys} index={i} {...short} />
 					</div>
 				))}
 			</div>
