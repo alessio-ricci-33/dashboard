@@ -44,11 +44,10 @@ export const ShortAnalytic = ({
 						target="_blank"
 						href={`https://www.youtube.com/watch?v=${short.videoId}`}
 						className="relative h-full aspect-[9/16]">
-						<Image
+						<img
 							className="absolute !w-auto !h-full my-auto rounded-sm object-cover"
 							src={short.metadata.snippet.thumbnails.maxres.url}
 							alt={short.metadata.snippet.title}
-							fill
 						/>
 					</Link>
 					<div className="flex flex-col gap-[calc(var(--p)*.8)] [&_*]:!leading-none">
