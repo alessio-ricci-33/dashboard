@@ -1,5 +1,5 @@
-import { cn } from "@/utils/shadcn";
-import { useState, useEffect } from "react";
+import { cn } from '@/utils/shadcn';
+import { useState, useEffect } from 'react';
 
 function SliceInput({
 	defaultValue,
@@ -42,11 +42,11 @@ function SliceInput({
 			min={1}
 			max={validShorts.length}
 			value={sliceCount}
-			step={1}
-			onChange={(e) => setSliceCount(Number(e.target.value))}
+			step={7}
+			onChange={e => setSliceCount(Number(e.target.value))}
 			className={cn(
 				className,
-				"inline mx-1 !size-fit !p-0 file:!w-fit border rounded-md text-center text-xs bg-transparent border-border"
+				'inline mx-1 !size-fit !p-0 file:!w-fit border rounded-md text-center text-xs bg-transparent border-border'
 			)}
 		/>
 	);
