@@ -228,7 +228,7 @@ export default () => {
 			<div className="w-full flex flex-col gap-2 pb-3">
 				<Tabs
 					onValueChange={tabValue => SetType(tabValue)}
-					defaultValue={type}
+					value={type}
 					className="shrink w-full ">
 					<TabsList>
 						<TabsTrigger value="Normal">Normal</TabsTrigger>
@@ -279,9 +279,7 @@ export default () => {
 								const percent =
 									scores.reduce((total, score) => {
 										delta += score;
-										return total + type === 'delta'
-											? Math.abs(score)
-											: score;
+										return total + Math.abs(score);
 									}, 0) / heatmap.totTrend;
 
 								return (
@@ -373,12 +371,12 @@ export default () => {
 								Tot.
 							</div>
 							{heatmap.avg.values().map(scores => {
-								const score =
-										scores.reduce(
-											(total, score) => total + score,
-											0
-										) / heatmap.totAvg,
-									opacity = Math.abs(score / heatmap.maxAvg);
+								let delta = 0;
+								const percent =
+									scores.reduce((total, score) => {
+										delta += score;
+										return total + Math.abs(score);
+									}, 0) / heatmap.totAvg;
 								return (
 									<div
 										className="col-span-1 row-span-1 size-full rounded-xs text-[.67rem] text-center font-bold leading-none flex justify-center items-center aspect-square"
@@ -386,13 +384,15 @@ export default () => {
 											backgroundColor:
 												type === 'delta'
 													? `rgba(var(--${
-															score < 0
+															delta < 0
 																? 'negative'
 																: 'positive'
-													  }),${opacity})`
-													: `rgba(var(--color),${score})`,
+													  }),${percent})`
+													: `rgba(var(--color),${percent})`,
 										}}>
-										{Math.round(score * 100).toFixed(0)}
+										{Math.round(
+											percent * (delta < 0 ? -100 : 100)
+										).toFixed(0)}
 									</div>
 								);
 							})}
