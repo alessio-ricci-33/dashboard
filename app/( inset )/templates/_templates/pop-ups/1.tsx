@@ -731,9 +731,10 @@ export const component = () => {
 						</div>
 					</TabsContent>
 				</Tabs>
+
 				<Separator
 					orientation="vertical"
-					className="![background-color:transparent] bg-radial-[at_center] from-white to-87% to-transparent !h-[-webkit-fill-available]"
+					className="   ![background-color:transparent] bg-radial-[at_center] from-white to-87% to-transparent !h-[-webkit-fill-available]"
 				/>
 				<div className="contents">
 					{tab === 'image' ? (
