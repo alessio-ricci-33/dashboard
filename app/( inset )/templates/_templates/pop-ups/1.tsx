@@ -220,6 +220,8 @@ export const Image = (
 					<Group x={0} y={-3}>
 						{/* Immagine locale sopra il rettangolo */}
 						<LocalImage
+							x={PADDING / 2}
+							y={0}
 							src="/messaggi-italia.png" // immagine salvata in public/images/logo.png
 							height={IslandParams.height.default - PADDING}
 							shadowColor="#15171c"
@@ -227,8 +229,8 @@ export const Image = (
 						/>
 
 						<Text
-							x={IslandParams.height.default - PADDING + 8}
-							y={PADDING / 2}
+							x={IslandParams.height.default + 5}
+							y={0}
 							text={brandName}
 							lineHeight={1.1}
 							letterSpacing={1.4}
@@ -239,7 +241,9 @@ export const Image = (
 						/>
 					</Group>
 
-					<Group y={height - IslandParams.height.default - PADDING} x={3}>
+					<Group
+						y={height - IslandParams.height.default - PADDING * 2}
+						x={PADDING / 2 + 3}>
 						<Text
 							text={cta}
 							fontSize={16}
@@ -271,17 +275,17 @@ export const Image = (
 						x={
 							width -
 							PADDING * 2 -
-							(IslandParams.height.default - PADDING - 4) / 2
+							(IslandParams.height.default - PADDING - 4)
 						}
-						y={(IslandParams.height.default - PADDING - 4) / 2 - 1}>
+						y={(IslandParams.height.default - PADDING) / 2}>
 						<Circle
 							radius={999}
 							fill="#15171c"
 							shadowBlur={7}
 							shadowColor="#ffffff"
 							shadowOpacity={0.4}
-							height={IslandParams.height.default - PADDING - 4}
-							width={IslandParams.height.default - PADDING - 4}
+							height={IslandParams.height.default * 0.8}
+							width={IslandParams.height.default * 0.8}
 						/>
 						<SvgIconImage
 							Icon={
@@ -291,9 +295,9 @@ export const Image = (
 									opacity={0.55}
 								/>
 							}
-							height={21}
-							x={-(IslandParams.height.default - PADDING - 4) / 2 + 9}
-							y={-(IslandParams.height.default - PADDING - 4) / 2 + 9}
+							height={Math.max(21, IslandParams.height.default * 0.33)}
+							x={-Math.max(10.5, IslandParams.height.default * 0.165)}
+							y={-Math.max(10.5, IslandParams.height.default * 0.165)}
 						/>
 					</Group>
 				</Group>
