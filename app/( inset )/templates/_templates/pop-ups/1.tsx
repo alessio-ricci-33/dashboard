@@ -277,8 +277,9 @@ export const Image = (
 							PADDING * 2 -
 							(IslandParams.height.default - PADDING - 4)
 						}
-						y={(IslandParams.height.default - PADDING) / 2 - 1}>
+						y={(IslandParams.height.default - PADDING) / 2}>
 						<Circle
+							//
 							radius={999}
 							fill="#15171c"
 							shadowBlur={7}
