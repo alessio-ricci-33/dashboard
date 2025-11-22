@@ -182,18 +182,18 @@ export const Image = (
 						shadowBlur={12}
 						shadowColor="#000000"
 					/>
-					<Group width={width} height={height * 0.18} y={0} x={0}>
+					<Group width={width} height={height * 0.18} y={15} x={0}>
 						<SvgIconImage
 							Icon={<HiArrowLeft size={18} color="#000" />}
 							width={18}
 							x={8}
-							y={38}
+							y={8}
 						/>
 						<LocalImage
 							src="/templates/wingai/logo.webp"
 							width={105}
 							x={width / 2 - 52.5}
-							y={30}
+							y={0}
 							shadowBlur={5}
 							shadowColor="#000000"
 							shadowOpacity={0.3}
@@ -203,12 +203,12 @@ export const Image = (
 							Icon={<TbMenu2 size={24} color="#f27365" />}
 							width={24}
 							x={width - 33}
-							y={37.5}
+							y={8}
 						/>
 					</Group>
 
 					<Group
-						y={height * 0.18}
+						y={height * 0.17}
 						clipFunc={ctx => {
 							ctx.beginPath();
 							ctx.roundRect(0, 0, width, height * 0.82, 12);
@@ -257,7 +257,7 @@ export const Image = (
 								]}
 							/>
 							{/* Search bar */}
-
+							{/* 
 							<Group x={10} y={height * 0.6 - 90}>
 								<Rect
 									width={width - 20}
@@ -289,13 +289,13 @@ export const Image = (
 									x={40}
 									y={14}
 								/>
-							</Group>
-							<Group x={20} y={height * 0.07}>
+							</Group> */}
+							<Group x={20} y={height * 0.103}>
 								<Rect
 									x={0}
 									y={0}
 									width={width - 40}
-									height={height * 0.31}
+									height={height * 0.365}
 									fill={'#000000'}
 									cornerRadius={12}
 									shadowBlur={12}
@@ -304,13 +304,27 @@ export const Image = (
 								/>
 								{/* Current chat */}
 								{props.chatSnapshot && (
-									<LocalImage
-										y={height * 0.025}
-										src={props.chatSnapshot}
-										width={width - 50}
-										x={5}
-										cornerRadius={12}
-									/>
+									<Group
+										clipFunc={ctx => {
+											ctx.beginPath();
+											ctx.roundRect(
+												0,
+												0,
+												width - 40,
+												height * 0.365,
+												12
+											);
+											ctx.closePath();
+										}}>
+										<LocalImage
+											y={0}
+											x={0}
+											src={props.chatSnapshot}
+											width={width - 40}
+											height={height * 0.365}
+											cornerRadius={12}
+										/>
+									</Group>
 								)}
 							</Group>
 						</Group>
