@@ -45,7 +45,7 @@ export const params = {
 	height: {
 		type: Number,
 		label: 'Height',
-		default: 495,
+		default: 435,
 		props: {
 			className: 'col-span-3',
 		},
@@ -334,7 +334,7 @@ export const Image = (
 								width={height * 4}
 								height={height * 4}
 								x={width / 2}
-								y={height * 2.94}
+								y={height * 2.9}
 								radius={height * 3}
 								fillRadialGradientEndRadius={height}
 								fillRadialGradientStartRadius={height * 3}
@@ -351,7 +351,7 @@ export const Image = (
 								shadowColor="#000000"
 							/>
 							<Group width={width - 20} x={10} y={-10}>
-								<Group width={width - 20} x={0}>
+								<Group width={width - 20} x={0} y={-10}>
 									<LocalImage
 										y={-4}
 										x={Math.max(
