@@ -291,7 +291,7 @@ export const Image = (
 								/>
 							</Group> */}
 							<Group x={20} y={height * 0.103}>
-								<Rect
+								{/* <Rect
 									x={0}
 									y={0}
 									width={width - 40}
@@ -301,7 +301,7 @@ export const Image = (
 									shadowBlur={12}
 									shadowColor="#000000"
 									shadowOpacity={0.66}
-								/>
+								/> */}
 								{/* Current chat */}
 								{props.chatSnapshot && (
 									<Group
@@ -321,7 +321,7 @@ export const Image = (
 											x={0}
 											src={props.chatSnapshot}
 											width={width - 40}
-											height={height * 0.365}
+											// height={height * 0.365}
 											cornerRadius={12}
 										/>
 									</Group>
