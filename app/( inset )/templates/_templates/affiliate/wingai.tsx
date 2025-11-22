@@ -302,7 +302,7 @@ export const Image = (
 									shadowColor="#000000"
 									shadowOpacity={0.66}
 								/> */}
-								{/* Current chat */}
+								{/* Current chat  */}
 								{props.chatSnapshot && (
 									<Group
 										clipFunc={ctx => {
