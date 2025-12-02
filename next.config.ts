@@ -25,34 +25,11 @@ const nextConfig: NextConfig = {
 			bodySizeLimit: '20mb',
 		},
 	},
-	async headers() {
+	async rewrites() {
 		return [
 			{
-				source: '/:path*', // Match all routes
-				headers: [
-					{
-						key: 'Access-Control-Allow-Origin',
-						value: 'https://server.msgi.it',
-					},
-					{
-						key: 'Access-Control-Allow-Methods',
-						value: 'GET',
-					},
-					{
-						key: 'Access-Control-Allow-Headers',
-						value: 'Content-Type, Authorization, X-Requested-With',
-					},
-					{
-						key: 'Access-Control-Allow-Credentials',
-						value: 'true',
-					},
-					{
-						key: 'Cache-Control',
-						value: 'no-cache, must-revalidate, proxy-revalidate',
-					},
-					{ key: 'Pragma', value: 'no-cache' },
-					{ key: 'Expires', value: '0' },
-				],
+				source: '/server/:path*',
+				destination: 'https://server.msgi.it/:path*',
 			},
 		];
 	},

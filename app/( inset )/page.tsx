@@ -23,7 +23,15 @@ export default () => {
 
 	useEffect(() => {
 		// setShorts(shorts_list);
-		fetch('https://server.msgi.it/history/shorts', { cache: 'no-store' })
+		fetch('/server/history/shorts', {
+			method: 'GET',
+			headers: {
+				'Access-Control-Allow-Origin': '*',
+				'Content-Type': 'application/json',
+			},
+			credentials: 'include',
+			cache: 'no-store',
+		})
 			.then(r => r.json())
 			.then(({ data }) => {
 				console.log(data);
