@@ -15,23 +15,48 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/ui/tabs';
 
 // import shorts_list from '@/constants/shorts.json';
 
+const asShorts = (data: unknown) => (Array.isArray(data) ? data : []);
+
 export default () => {
-	const [shorts, setShorts] = useState([]),
+	const [shorts, setShorts] = useState<any[]>([]),
 		[type, SetType] = usePersistentState<'trend' | 'avg'>('heatmap-type', 'trend', 'local'),
 		[sliceCount, setSliceCount] = usePersistentState('heatmap-slice-count', 28, 'local'),
 		[keys, setKeys] = usePersistentState('visible-keys', ['views'], 'local');
 
 	useEffect(() => {
-		fetch('/api/history/shorts', {
+		let isMounted = true;
+
+		fetch('/server/history/shorts', {
 			method: 'GET',
+			headers: {
+				'Content-Type': 'application/json',
+			},
 			credentials: 'include',
 			cache: 'no-store',
 		})
-			.then(r => r.json())
-			.then(({ data }) => {
-				console.log(data);
-				setShorts(data);
+			.then(async response => {
+				if (!response.ok) {
+					throw new Error(`History upstream error ${response.status}`);
+				}
+
+				return response.json();
+			})
+			.then(body => {
+				if (!isMounted) return;
+
+				setShorts(asShorts(body?.data));
+			})
+			.catch(error => {
+				console.error('Failed to load shorts history:', error);
+
+				if (!isMounted) return;
+
+				setShorts([]);
 			});
+
+		return () => {
+			isMounted = false;
+		};
 	}, []);
 
 	const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
@@ -55,8 +80,11 @@ export default () => {
 			// const ageDays = Math.max((now - publishDate) / (1000 * 60 * 60 * 24), 1);
 			// const weight = 1 / ageDays;
 			const weight = sliceCount - i;
+			const metricsHistory = Array.isArray(short?.metricsHistory)
+				? short.metricsHistory
+				: [];
 
-			short.metricsHistory.forEach(metrics => {
+			metricsHistory.forEach(metrics => {
 				const date = new Date(metrics.timestamp);
 				const day = date.toLocaleDateString('en-US', { weekday: 'short' });
 				const hour = date.getHours();

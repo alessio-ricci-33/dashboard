@@ -8,7 +8,7 @@ function SliceInput({
 	className,
 }: {
 	defaultValue?: number;
-	validShorts: string[];
+	validShorts: unknown[];
 	onHeavyProcess: (count: number) => void;
 	className?: string;
 }) {
