@@ -22,13 +22,8 @@ export default () => {
 		[keys, setKeys] = usePersistentState('visible-keys', ['views'], 'local');
 
 	useEffect(() => {
-		// setShorts(shorts_list);
-		fetch('/server/history/shorts', {
+		fetch('/api/history/shorts', {
 			method: 'GET',
-			headers: {
-				'Access-Control-Allow-Origin': '*',
-				'Content-Type': 'application/json',
-			},
 			credentials: 'include',
 			cache: 'no-store',
 		})

@@ -34,11 +34,10 @@ export default function LoginPage() {
 				headers: { 'Content-Type': 'application/json' },
 				body: { username, password },
 			});
-			console.log('rest => ', rest);
 
 			if (!success) throw new Error(rest.message);
 
-			await login(username, password);
+			await login(rest.data.user, rest.data.token);
 			router.replace('/');
 			router.refresh();
 		} catch (err: any) {

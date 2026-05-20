@@ -9,7 +9,7 @@ import { usePathname, useRouter } from 'next/navigation';
 interface AuthContextType {
 	user: any | null;
 	loading: boolean;
-	login: (userData: any, token: string) => Promise<void>;
+	login: (userData: any, token?: string) => Promise<void>;
 	logout: () => Promise<void>;
 	isAuthenticated: boolean;
 }
@@ -39,17 +39,20 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 		initAuth();
 	}, []);
 
-	const login = async (userData: any, token: string) => {
+	const login = async (userData: any, token?: string) => {
 		storage.set('user', userData);
 		await indexedDBStore.set('user', userData);
-		document.cookie = `auth_token=${token}; path=/;`;
+		if (token) {
+			document.cookie = `auth_token=${encodeURIComponent(token)}; path=/; SameSite=Lax`;
+		}
 		setUser(userData);
 	};
 
 	const logout = async () => {
 		storage.remove('user');
 		await indexedDBStore.set('user', null);
-		document.cookie = 'auth_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
+		document.cookie =
+			'auth_token=; path=/; SameSite=Lax; expires=Thu, 01 Jan 1970 00:00:00 GMT';
 		setUser(null);
 	};
 
