@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/ui/card';
 import { Button } from '@/ui/button';
@@ -10,18 +11,20 @@ import { useAuth } from '@/hooks/use-auth';
 import apiFetch from '@/utils/api-fetch';
 
 export default function LoginPage() {
-	const { login, isAuthenticated } = useAuth();
+	const { login, isAuthenticated, loading: authLoading } = useAuth();
 	const router = useRouter();
 	const [username, setUsername] = useState('');
 	const [password, setPassword] = useState('');
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 
-	if (isAuthenticated) {
+	useEffect(() => {
+		if (authLoading || !isAuthenticated) return;
 		router.replace('/');
 		router.refresh();
-		return null;
-	}
+	}, [authLoading, isAuthenticated, router]);
+
+	if (authLoading || isAuthenticated) return null;
 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();

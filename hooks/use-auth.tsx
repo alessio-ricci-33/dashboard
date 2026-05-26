@@ -21,16 +21,44 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 		pathname = usePathname();
 	const [loading, setLoading] = useState(true);
 	const [user, setUser] = usePersistentState('user', null, 'local');
+	const [hasAuthToken, setHasAuthToken] = useState(false);
+
+	const readAuthToken = () => {
+		if (typeof document === 'undefined') return null;
+
+		return document.cookie
+			.split('; ')
+			.find(cookie => cookie.startsWith('auth_token='))
+			?.split('=')[1]
+			? decodeURIComponent(
+					document.cookie
+						.split('; ')
+						.find(cookie => cookie.startsWith('auth_token='))
+						?.split('=')[1] || ''
+				)
+			: null;
+	};
 
 	useEffect(() => {
-		if (user && pathname === '/login') {
+		if (hasAuthToken && user && pathname === '/login') {
 			router.replace('/');
 			router.refresh();
 		}
-	}, [user]);
+	}, [hasAuthToken, pathname, router, user]);
 
 	useEffect(() => {
 		const initAuth = async () => {
+			const token = readAuthToken();
+			setHasAuthToken(!!token);
+
+			if (!token) {
+				storage.remove('user');
+				await indexedDBStore.set('user', null);
+				setUser(null);
+				setLoading(false);
+				return;
+			}
+
 			const cached = storage.get('user');
 			const dbUser = await indexedDBStore.get('user');
 			setUser(cached || dbUser);
@@ -44,6 +72,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 		await indexedDBStore.set('user', userData);
 		if (token) {
 			document.cookie = `auth_token=${encodeURIComponent(token)}; path=/; SameSite=Lax`;
+			setHasAuthToken(true);
 		}
 		setUser(userData);
 	};
@@ -53,6 +82,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 		await indexedDBStore.set('user', null);
 		document.cookie =
 			'auth_token=; path=/; SameSite=Lax; expires=Thu, 01 Jan 1970 00:00:00 GMT';
+		setHasAuthToken(false);
 		setUser(null);
 	};
 
@@ -63,7 +93,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 				loading,
 				login,
 				logout,
-				isAuthenticated: !!user,
+				isAuthenticated: hasAuthToken,
 			}}>
 			{children}
 		</AuthContext.Provider>

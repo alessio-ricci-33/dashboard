@@ -1,12 +1,19 @@
 import { env } from 'node:process';
 import { GoogleGenAI } from '@google/genai';
 import { shortsTitles } from '@/constants/system-instructions';
+import {
+	DEFAULT_GEMINI_MODEL,
+	GEMINI_MODEL_OPTIONS,
+	type GeminiModelName,
+} from '@/constants/gemini-models';
 
-export type ModelName =
-	| 'gemini-2.5-pro'
-	| 'gemini-2.5-flash'
-	| 'gemini-2.5-flash-lite-preview-06-17'
-	| 'gemini-2.0-flash';
+export type ModelName = GeminiModelName;
+
+export { GEMINI_MODEL_OPTIONS, DEFAULT_GEMINI_MODEL };
+
+export const isModelName = (value: unknown): value is ModelName =>
+	typeof value === 'string' &&
+	GEMINI_MODEL_OPTIONS.some(option => option.value === value);
 
 // --- Gestione API Keys con rotazione ---
 const API_KEYS = [
@@ -74,7 +81,7 @@ const withKeyRotation = async <T>(fn: (client: GoogleGenAI) => Promise<T>): Prom
 
 // --- Funzione principale ---
 export const genShortTitles = async ({
-	modelName = 'gemini-2.5-flash',
+	modelName = DEFAULT_GEMINI_MODEL,
 	prompt,
 	platform,
 	tonality,

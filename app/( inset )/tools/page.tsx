@@ -12,15 +12,31 @@ import { FaArrowUp, FaPlus } from 'react-icons/fa6';
 import { Popover, PopoverTrigger, PopoverContent } from '@/ui/popover';
 import { CgAttachment } from 'react-icons/cg';
 import { Separator } from '@/ui/separator';
+import {
+	DEFAULT_GEMINI_MODEL,
+	GEMINI_MODEL_OPTIONS,
+	isGeminiModelName,
+	type GeminiModelName,
+} from '@/constants/gemini-models';
 
 export default function Page() {
 	const [prompt, setPrompt] = useState(''),
 		[CSV, setCSV] = useState('');
 
-	const [model, setModel] = usePersistentState<
-		'gemini-2.5-flash' | 'gemini-2.5-pro' | 'gemini-2.5-flash-lite-preview-06-17'
-	>('tools-model', 'gemini-2.5-flash', 'local');
+	const [storedModel, setStoredModel] = usePersistentState<string>(
+		'tools-model',
+		DEFAULT_GEMINI_MODEL,
+		'local'
+	);
+	const model: GeminiModelName = isGeminiModelName(storedModel)
+		? storedModel
+		: DEFAULT_GEMINI_MODEL;
 	const [loading, setLoading] = useState(false);
+
+	useEffect(() => {
+		if (isGeminiModelName(storedModel)) return;
+		setStoredModel(DEFAULT_GEMINI_MODEL);
+	}, [storedModel, setStoredModel]);
 
 	const [open, setOpen] = useState(false);
 	const fileInputRef = useRef<HTMLInputElement>(null);
@@ -140,20 +156,16 @@ export default function Page() {
 				<div className="flex flex-row items-end justify-between gap-2 ">
 					<Select
 						value={model}
-						onValueChange={v => setModel(v as typeof model)}>
+						onValueChange={v => setStoredModel(v)}>
 						<SelectTrigger className="!w-fit !h-full rounded-full !font-secondary capitalize *:data-[slot=select-value]:!-mb-1 [&>svg]:!size-4.5">
 							<SelectValue placeholder="Seleziona modello" />
 						</SelectTrigger>
 						<SelectContent className="!outline-none !border-zinc-600 !ring-0 [&>*]:!font-secondary [&>*]:capitalize">
-							<SelectItem value="gemini-2.5-flash">
-								gemini-2.5-flash
-							</SelectItem>
-							<SelectItem value="gemini-2.5-flash-lite-preview-06-17">
-								gemini-2.5-flash-lite-preview-06-17
-							</SelectItem>
-							<SelectItem value="gemini-2.5-pro">
-								gemini-2.5-pro
-							</SelectItem>
+							{GEMINI_MODEL_OPTIONS.map(option => (
+								<SelectItem key={option.value} value={option.value}>
+									{option.label}
+								</SelectItem>
+							))}
 						</SelectContent>
 					</Select>
 				</div>
