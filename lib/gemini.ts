@@ -17,6 +17,7 @@ export const isModelName = (value: unknown): value is ModelName =>
 
 // --- Gestione API Keys con rotazione ---
 const API_KEYS = [
+	env.GEMINI_API_KEY,
 	env.GEMINI_API_KEY_1,
 	env.GEMINI_API_KEY_2,
 	env.GEMINI_API_KEY_3,
